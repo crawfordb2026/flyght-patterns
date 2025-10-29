@@ -1,0 +1,57 @@
+DAM Data Split Summary
+==================================================
+
+Split performed: 2025-10-28 22:37:43
+Input file: dam_data_marked.csv
+Input rows: 1,491,300
+
+Output files:
+------------------------------
+
+MT file: dam_data_MT.csv
+  - Rows: 497,100
+  - Columns: datetime, monitor, channel, value, fly_id, genotype, sex, treatment, LIKELY_DEAD
+  - Date range: 2025-09-19 to 2025-09-25
+  - Unique flies: 60
+  - File size: 28.0 MB
+
+CT file: dam_data_CT.csv
+  - Rows: 497,100
+  - Columns: datetime, monitor, channel, value, fly_id, genotype, sex, treatment, LIKELY_DEAD
+  - Date range: 2025-09-19 to 2025-09-25
+  - Unique flies: 60
+  - File size: 28.0 MB
+
+Pn file: dam_data_Pn.csv
+  - Rows: 497,100
+  - Columns: datetime, monitor, channel, value, fly_id, genotype, sex, treatment, LIKELY_DEAD
+  - Date range: 2025-09-19 to 2025-09-25
+  - Unique flies: 60
+  - File size: 27.9 MB
+
+Verification: ✓ Sum of output rows (1,491,300) = Input rows (1,491,300)
+
+Usage Guidelines:
+------------------------------
+• MT file: Use for sleep/activity analysis (movement is key indicator)
+• CT file: Use for cumulative activity tracking over time
+• Pn file: Use for pause/inactivity behavior analysis
+
+Note: All files contain the same metadata (fly_id, genotype, sex, treatment)
+      but different measurement values. Each file is self-contained.
+
+To recombine if needed:
+------------------------------
+```python
+import pandas as pd
+
+mt = pd.read_csv('dam_data_MT.csv')
+ct = pd.read_csv('dam_data_CT.csv')
+pn = pd.read_csv('dam_data_Pn.csv')
+
+mt['reading'] = 'MT'
+ct['reading'] = 'CT'
+pn['reading'] = 'Pn'
+
+combined = pd.concat([mt, ct, pn])
+```
