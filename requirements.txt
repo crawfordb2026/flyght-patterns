@@ -1,0 +1,22 @@
+# Python Dependencies for Fly Sleep Analysis Pipeline
+# Install with: pip install -r requirements.txt
+
+# Core data processing
+pandas>=1.5.0
+numpy>=1.20.0
+
+# Statistical analysis
+scipy>=1.11.0  # Required for false_discovery_control in pca_analysis.py
+scikit-posthocs>=0.7.0  # Required for post-hoc tests (Tukey HSD, Dunn) in pca_analysis.py
+
+# Machine learning
+scikit-learn>=1.0.0  # Required for PCA, LinearRegression, DBSCAN, and NearestNeighbors
+umap-learn>=0.5.0  # Required for UMAP dimensionality reduction in umap_dbscan_analysis.py
+
+# Visualization
+matplotlib>=3.5.0
+seaborn>=0.12.0
+
+# Standard library (no installation needed, but listed for completeness)
+# - os, sys, argparse, pathlib, warnings (all built-in)
+

@@ -1,0 +1,26 @@
+ML FEATURES CLEANING DIAGNOSTICS
+============================================================
+
+Original flies: 53
+Cleaned flies: 50
+Removed: 3
+
+Removed Flies:
+fly_id Genotype    Sex Treatment  total_sleep_mean  total_bouts_mean  P_doze_mean  never_slept  zero_sleep_bouts  zero_P_doze
+  5-22      Iso Female   2mM His               0.0               0.0          0.0         True              True         True
+   6-4      Rye Female   2mM His               0.0               0.0          0.0         True              True         True
+
+IQR Outlier Summary:
+Genotype    Sex Treatment  n_total  n_outliers  percent_outliers
+     Fmn Female   2mM His        4           0               0.0
+     Fmn Female   8mM His        4           1              25.0
+     Fmn Female       VEH        4           0               0.0
+     Iso Female   2mM His        3           0               0.0
+     Iso Female   8mM His        3           0               0.0
+     Iso Female       VEH        3           0               0.0
+     Rye Female   2mM His        3           0               0.0
+     Rye Female   8mM His        3           0               0.0
+     Rye Female       VEH        3           0               0.0
+     SSS Female   2mM His        7           0               0.0
+     SSS Female   8mM His        7           0               0.0
+     SSS Female       VEH        7           0               0.0
