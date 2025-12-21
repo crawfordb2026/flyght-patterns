@@ -150,14 +150,30 @@ def main():
     print("📊 Splitting DAM Data by Reading Type")
     print("=" * 50)
     
-    # Define file paths
-    input_file = '../../data/processed/dam_data_marked.csv'
+    # Define file paths - try multiple possible input files
+    possible_inputs = [
+        '../../data/processed/dam_data_marked.csv',
+        '../../data/processed/dam_data_with_flies.csv',
+        '../../data/processed/dam_data_merged.csv'
+    ]
+    
+    input_file = None
+    for path in possible_inputs:
+        if os.path.exists(path):
+            input_file = path
+            break
+    
     output_dir = '../../data/processed'
     
     # Check if input file exists
-    if not os.path.exists(input_file):
-        print(f"❌ Error: {input_file} not found!")
-        print("   Please run mark_dead_flies.py first to generate the marked data.")
+    if input_file is None:
+        print(f"❌ Error: No input file found!")
+        print("   Please ensure one of these files exists:")
+        for path in possible_inputs:
+            print(f"     - {path}")
+        print("\n   Or run:")
+        print("     - filter_empty_channels.py (creates dam_data_with_flies.csv)")
+        print("     - generate_health_report.py + mark_from_health_report.py (creates dam_data_marked.csv)")
         return
     
     # Load input file info

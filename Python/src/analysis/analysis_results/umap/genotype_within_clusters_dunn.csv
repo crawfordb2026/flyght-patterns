@@ -1,0 +1,25 @@
+cluster,feature,comparison,p_value
+0,night_sleep_mean_Z,Fmn vs Iso,0.25146885739401736
+0,night_sleep_mean_Z,Fmn vs Rye,1.0
+0,night_sleep_mean_Z,Fmn vs SSS,1.0
+0,night_sleep_mean_Z,Iso vs Fmn,0.25146885739401736
+0,night_sleep_mean_Z,Iso vs Rye,1.0
+0,night_sleep_mean_Z,Iso vs SSS,0.023824499499113003
+0,night_sleep_mean_Z,Rye vs Fmn,1.0
+0,night_sleep_mean_Z,Rye vs Iso,1.0
+0,night_sleep_mean_Z,Rye vs SSS,0.7797203412895872
+0,night_sleep_mean_Z,SSS vs Fmn,1.0
+0,night_sleep_mean_Z,SSS vs Iso,0.023824499499113003
+0,night_sleep_mean_Z,SSS vs Rye,0.7797203412895872
+0,total_sleep_mean_Z,Fmn vs Iso,0.25146885739401736
+0,total_sleep_mean_Z,Fmn vs Rye,1.0
+0,total_sleep_mean_Z,Fmn vs SSS,1.0
+0,total_sleep_mean_Z,Iso vs Fmn,0.25146885739401736
+0,total_sleep_mean_Z,Iso vs Rye,1.0
+0,total_sleep_mean_Z,Iso vs SSS,0.023824499499113003
+0,total_sleep_mean_Z,Rye vs Fmn,1.0
+0,total_sleep_mean_Z,Rye vs Iso,1.0
+0,total_sleep_mean_Z,Rye vs SSS,0.7797203412895872
+0,total_sleep_mean_Z,SSS vs Fmn,1.0
+0,total_sleep_mean_Z,SSS vs Iso,0.023824499499113003
+0,total_sleep_mean_Z,SSS vs Rye,0.7797203412895872

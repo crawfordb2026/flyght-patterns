@@ -3,7 +3,6 @@
 Bin DAM Data to Hourly Intervals
 
 This script bins raw DAM data (from split reading type files) into hourly intervals.
-Replaces the outdated 5-minute binning script with true hourly aggregation.
 
 Usage:
     python bin_hourly.py <input_file> [<input_file2> ...]
@@ -25,7 +24,7 @@ def bin_to_hourly(df):
     Bin raw DAM data to hourly intervals.
     
     Args:
-        df (pd.DataFrame): Input data with columns including datetime, value, LIKELY_DEAD, etc.
+        df (pd.DataFrame): Input data with columns including datetime, value, etc.
         
     Returns:
         pd.DataFrame: Hourly binned data with one row per fly per hour
@@ -54,20 +53,16 @@ def bin_to_hourly(df):
     # Keep only columns that exist
     metadata_cols = [col for col in metadata_cols if col in df.columns]
     
-    # Check if LIKELY_DEAD column exists
-    has_likely_dead = 'LIKELY_DEAD' in df.columns
-    
     # Floor datetime to hour
     df['datetime_hour'] = df['datetime'].dt.floor('H')
     
     # Group by hour and fly metadata
-    # Aggregate: sum value, use OR logic for LIKELY_DEAD (if column exists)
+    # Aggregate: sum value
     agg_dict = {
         activity_col: 'sum'  # Sum activity values
     }
     
-    if has_likely_dead:
-        agg_dict['LIKELY_DEAD'] = 'any'  # True if ANY reading in that hour has LIKELY_DEAD = True
+   
     
     # Group by datetime_hour and all metadata columns
     binned = df.groupby(['datetime_hour'] + metadata_cols, as_index=False).agg(agg_dict)
@@ -121,17 +116,6 @@ def fill_missing_hours(df, min_hour, max_hour):
         merged = merged.drop(columns=[activity_col + '_y'])
     else:
         merged[activity_col] = 0
-    
-    # Handle LIKELY_DEAD for missing hours (if column exists)
-    if 'LIKELY_DEAD' in merged.columns:
-        # Sort by datetime for each fly to determine forward-fill logic
-        merged = merged.sort_values(['fly_id', 'datetime'])
-        
-        # Group by fly and forward-fill LIKELY_DEAD
-        # If LIKELY_DEAD was True in previous hour, keep it True
-        # If not (or no data), set to False
-        # Use .fillna(method='ffill') but Pandas warns about this, use GroupBy.ffill() instead
-        merged['LIKELY_DEAD'] = merged.groupby('fly_id')['LIKELY_DEAD'].ffill().fillna(False)
     
     return merged
 

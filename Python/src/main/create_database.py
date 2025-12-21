@@ -193,12 +193,8 @@ def main():
     # Merge time-series data with metadata using (monitor, channel)
     merged_data = time_series_data.merge(fly_metadata, on=['monitor', 'channel'])
     
-    # Add LIKELY_DEAD column (default = False)
-    # This column will be updated by mark_dead_flies.py to identify flies that die
-    merged_data['LIKELY_DEAD'] = False
-    
     # Reorder columns to match desired structure
-    final_columns = ['datetime', 'monitor', 'channel', 'reading', 'value', 'fly_id', 'genotype', 'sex', 'treatment', 'LIKELY_DEAD']
+    final_columns = ['datetime', 'monitor', 'channel', 'reading', 'value', 'fly_id', 'genotype', 'sex', 'treatment']
     merged_data = merged_data[final_columns]
     
     # Save merged data
