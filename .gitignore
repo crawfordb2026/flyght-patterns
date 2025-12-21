@@ -1,0 +1,3 @@
+# Ignore all CSV files in processed directory (large data files)
+Python/data/processed/*.csv
+
