@@ -17,6 +17,12 @@ umap-learn>=0.5.0  # Required for UMAP dimensionality reduction in umap_dbscan_a
 matplotlib>=3.5.0
 seaborn>=0.12.0
 
+# Database (for db-pipeline)
+sqlalchemy>=2.0.0  # Required for database ORM and connection management
+psycopg2-binary>=2.9.0  # PostgreSQL adapter (binary version for easier installation)
+# Note: TimescaleDB is a PostgreSQL extension, not a Python package
+# Install TimescaleDB separately: https://docs.timescale.com/install/latest/
+
 # Standard library (no installation needed, but listed for completeness)
 # - os, sys, argparse, pathlib, warnings (all built-in)
 
