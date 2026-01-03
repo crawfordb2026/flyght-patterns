@@ -138,7 +138,8 @@ def create_umap_dataframe(umap_result, df_veh, umap_data):
     )
     
     # Add metadata
-    meta_cols = ['fly_id', 'Genotype', 'Sex']
+    meta_cols = ['fly_id', 'Genotype', 'Sex', 'monitor', 'channel',
+                 'genotype', 'sex']  # Include both cases
     umap_df = umap_df.join(df_veh.loc[umap_data.index, meta_cols])
     
     return umap_df

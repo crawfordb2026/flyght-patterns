@@ -60,7 +60,7 @@ def parse_details(filepath):
     fly_metadata = df[['monitor', 'channel', 'fly_id', 'genotype', 'sex', 'treatment']].copy()
     
     # Remove rows with NA values (empty channels)
-    fly_metadata = fly_metadata[fly_metadata['genotype'] != 'NA'].copy()
+    fly_metadata = fly_metadata[fly_metadata['genotype'].apply(is_ok)].copy()
     
     print(f"✅ Parsed {len(fly_metadata)} flies from metadata")
     print(f"   Monitors: {sorted(fly_metadata['monitor'].unique())}")
@@ -201,7 +201,8 @@ def calculate_zt_phase(datetime_series, lights_on):
     """
     Calculate ZT (Zeitgeber Time) and Phase (Light/Dark).
     
-    ZT is rounded to integer (0-23) to match R behavior.
+    ZT is truncated to integer (0-23) based on hour boundaries.
+    Each ZT value spans a full hour: 9:00-9:59 → ZT0, 10:00-10:59 → ZT1, etc.
     Phase is "Light" if ZT < 12, "Dark" otherwise.
     
     Args:
@@ -218,8 +219,8 @@ def calculate_zt_phase(datetime_series, lights_on):
     # Calculate ZT_raw
     zt_raw = (hour_local - lights_on) % 24
     
-    # Round to integer, handle 24 -> 0
-    zt = np.round(zt_raw).astype(int)
+    # Truncate to integer (floor), handle 24 -> 0
+    zt = np.floor(zt_raw).astype(int)
     zt = np.where(zt == 24, 0, zt)
     
     # Calculate Phase
@@ -346,11 +347,11 @@ def total_sleep_minutes(counts, bin_length_min):
 
 
 def is_ok(x):
-    """Check if a value is valid (not NA, not empty, not "na")."""
+    """Check if a value is valid (not NA, not empty, not "na", not "nan")."""
     if pd.isna(x):
         return False
     x_str = str(x).lower()
-    return x_str != "" and x_str != "na"
+    return x_str != "" and x_str != "na" and x_str != "nan"
 
 
 def prep_data_for_health(df, exclude_days, bin_length_min):
