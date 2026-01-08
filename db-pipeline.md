@@ -129,7 +129,7 @@ Visual overview of how the system works:
                │
                ▼
 ┌─────────────────────────────────────────┐
-│  TIMESCALEDB: readings table (filtered)│
+│  TIMESCALEDB: readings table (filtered) │
 │  (fewer rows, dead/unhealthy removed)   │
 └─────────────────────────────────────────┘
 
@@ -235,7 +235,7 @@ Step 2 is optional and uses health reports to filter flies.
 │  (z-scored, ready for ML)               │
 │  ┌────────────────────────────────────┐ │
 │  │ fly_id │ total_sleep_z │ bouts_z │...│ │
-│  │────────┼───────────────┼──────────┼──│ │
+│  │────────┼───────────────┼──────────┼───│ │
 │  │M1_Ch01 │    0.234      │  -0.156 │...│ │
 │  │M1_Ch02 │   -0.567      │   0.891 │...│ │
 │  │  ...   │     ...       │   ...   │...│ │
@@ -324,8 +324,16 @@ Python/src/db-pipeline/
 ├── 3-create_feature_table.py    # Step 3: Feature extraction
 │   └── Extracts sleep and circadian features, creates features table
 │
-└── 4-clean_ml_features.py       # Step 4: Clean & normalize
-    └── Removes outliers, fixes NaN, creates z-scored features_z table
+├── 4-clean_ml_features.py       # Step 4: Clean & normalize
+│   └── Removes outliers, fixes NaN, creates z-scored features_z table
+│
+├── delete_experiment.py        # Utility: Delete experiment from database
+│   └── Removes all data for a given experiment_id
+│
+└── analysis/                   # Analysis scripts
+    ├── pca_analysis.py         # PCA analysis on features_z
+    ├── umap_dbscan_analysis.py # UMAP and DBSCAN clustering
+    └── sexdiff_analysis.py     # Sex difference analysis
 ```
 
 ## Usage
@@ -364,15 +372,28 @@ python3 1-prepare_data_and_health.py
 
 # Step 2: (Optional) Remove flies
 python3 2-remove_flies.py --statuses "Dead,Unhealthy"
-# Optional: --expirement-id specifies which expirement to use (defualt uses latest expirement)  
+# Optional: --experiment-id specifies which experiment to use (default uses latest experiment)  
 python3 2-remove_flies.py --experiment-id 1 --statuses "Dead"
-
 
 # Step 3: Extract features
 python3 3-create_feature_table.py
 
 # Step 4: Clean and normalize features
 python3 4-clean_ml_features.py
+```
+
+### 4. Utility scripts
+
+**Delete an experiment:**
+```bash
+# List all experiments
+python3 delete_experiment.py --list
+
+# Delete an experiment (will prompt for confirmation)
+python3 delete_experiment.py --experiment-id 1
+
+# Delete without confirmation prompt
+python3 delete_experiment.py --experiment-id 1 --confirm
 ```
 
 ## Memory usage
@@ -517,6 +538,7 @@ START
 - **Data cleaning**: Automatic outlier removal and normalization
 - **Z-scoring**: Features normalized for ML analysis
 - **Multiple experiments**: Support for multiple experiments in one database
+- **Experiment management**: Delete experiments and all associated data
 
 ## Notes
 
@@ -526,3 +548,4 @@ START
 - Step 2 is **optional** and used to filter flies based on health status
 - All data is stored in **TimescaleDB** (no intermediate CSV files)
 - The `USE_DATABASE` flag allows running without database (for testing)
+- TimescaleDB extension is optional - schema works with regular PostgreSQL
