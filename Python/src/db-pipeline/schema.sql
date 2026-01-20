@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS experiments (
 CREATE TABLE IF NOT EXISTS flies (
     fly_id VARCHAR(50) NOT NULL,
     experiment_id INT NOT NULL REFERENCES experiments(experiment_id),
-    monitor INT NOT NULL,
+    monitor VARCHAR(50) NOT NULL,
     channel INT NOT NULL,
     genotype VARCHAR(50) NOT NULL,
     sex VARCHAR(20) NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS readings (
     datetime TIMESTAMP NOT NULL,
     reading_type VARCHAR(10) NOT NULL CHECK (reading_type IN ('MT', 'CT', 'Pn')),
     value INT NOT NULL,
-    monitor INT NOT NULL,
+    monitor VARCHAR(50) NOT NULL,
     PRIMARY KEY (measurement_id, datetime),
     FOREIGN KEY (fly_id, experiment_id) REFERENCES flies(fly_id, experiment_id)
 );

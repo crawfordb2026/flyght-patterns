@@ -94,7 +94,8 @@ def parse_details(filepath):
     df = pd.DataFrame(rows)
     
     # Clean up the data
-    df['monitor'] = df['Monitor'].astype(int)
+    # Keep monitor as string to support formats like "51_06_20_25"
+    df['monitor'] = df['Monitor'].astype(str)
     df['channel'] = df['Channel'].str.replace('ch', '').astype(int)
     df['genotype'] = df['Genotype']
     df['sex'] = df['Sex']
@@ -121,7 +122,7 @@ def parse_monitor_file(filepath, monitor_num):
     
     Args:
         filepath (str): Path to Monitor*.txt file
-        monitor_num (int): Monitor number (5 or 6)
+        monitor_num (str): Monitor identifier (e.g., "51_06_20_25" 51 is monitor number rest is data)
         
     Returns:
         pd.DataFrame: time_series_data with columns:
@@ -703,7 +704,7 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                     flies_tuples = list(zip(
                         flies['fly_id'].astype(str).values.tolist(),
                         flies['experiment_id'].astype(int).values.tolist(),
-                        flies['monitor'].astype(int).values.tolist(),
+                        flies['monitor'].astype(str).values.tolist(),  # Keep as string for formats like "51_06_20_25"
                         flies['channel'].astype(int).values.tolist(),
                         flies['genotype'].astype(str).values.tolist(),
                         flies['sex'].astype(str).values.tolist(),
@@ -1044,25 +1045,14 @@ def prepare_data_and_health(
         if not os.path.exists(dam_file):
             sys.exit(1)
         
-        # Extract monitor number from filename
-        # Handle both "Monitor51.txt" and "Monitor51_06_20_25.txt" formats
+        # Extract monitor identifier from filename
+        # Extract everything after "Monitor" (e.g., "51_06_20_25" from "Monitor51_06_20_25.txt")
         filename = Path(dam_file).stem
-        # Remove "Monitor" prefix and extract first number before underscore or end
         if filename.startswith('Monitor'):
-            monitor_str = filename[7:]  # Remove "Monitor" (7 chars)
-            # Extract digits until underscore or end
-            monitor_num_str = ''
-            for char in monitor_str:
-                if char.isdigit():
-                    monitor_num_str += char
-                elif char == '_':
-                    break
-                else:
-                    break
-            monitor_num = int(monitor_num_str) if monitor_num_str else int(''.join(filter(str.isdigit, filename)))
+            monitor_num = filename[7:]  # Remove "Monitor" prefix (7 chars), keep rest as string
         else:
-            # Fallback: extract all digits (old behavior)
-            monitor_num = int(''.join(filter(str.isdigit, filename)))
+            # Fallback: extract all digits (old behavior for backward compatibility)
+            monitor_num = ''.join(filter(str.isdigit, filename))
         
         monitor_data = parse_monitor_file(dam_file, monitor_num)
         time_series_list.append(monitor_data)

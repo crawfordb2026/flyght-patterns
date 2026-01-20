@@ -90,8 +90,9 @@ def prepare_rhythm_data(dam_clean, exclude_days):
     # Drop rows with missing metadata or zt
     df = df.dropna(subset=['genotype', 'sex', 'treatment', 'zt', 'exp_day'])
     
-    # Create fly_id (format: M{monitor}_Ch{channel:02d}
-    df['fly_id'] = 'M' + df['monitor'].astype(str) + '_Ch' + df['channel'].astype(str).str.zfill(2)
+    # Use fly_id from database if available, otherwise create it (format: M{monitor}_Ch{channel:02d})
+    if 'fly_id' not in df.columns or df['fly_id'].isna().all():
+        df['fly_id'] = 'M' + df['monitor'].astype(str) + '_Ch' + df['channel'].astype(str).str.zfill(2)
     
     # Convert zt to numeric
     df['zt'] = pd.to_numeric(df['zt'], errors='coerce')
@@ -267,8 +268,9 @@ def prepare_sleep_data(dam_clean, exclude_days):
     if 'exp_day' in df.columns:
         df = df[~df['exp_day'].isin(exclude_days)].copy()
     
-    # Create fly_id (format: M{monitor}_Ch{channel:02d} ) and zt_num
-    df['fly_id'] = 'M' + df['monitor'].astype(str) + '_Ch' + df['channel'].astype(str).str.zfill(2)
+    # Use fly_id from database if available, otherwise create it (format: M{monitor}_Ch{channel:02d})
+    if 'fly_id' not in df.columns or df['fly_id'].isna().all():
+        df['fly_id'] = 'M' + df['monitor'].astype(str) + '_Ch' + df['channel'].astype(str).str.zfill(2)
     df['zt_num'] = pd.to_numeric(df['zt'], errors='coerce')
     
     # Rename value to movement
