@@ -196,7 +196,7 @@ REMOVE_BY_STATUS = ["Dead"]  # Remove flies with these statuses
 
 ## Output Files
 
-All output files are saved to `Python/data/processed/`:
+All output files are saved to `Python/src/pipeline/data/processed/`:
 
 1. `dam_data_prepared.csv` - Prepared data with time variables
 2. `health_report.csv` - Per-fly health status summary

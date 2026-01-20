@@ -47,6 +47,9 @@ def parse_details(filepath):
     """
     Parse details.txt to extract fly metadata.
     
+    Handles space-separated or tab-separated values. Treatment (last column)
+    can contain spaces (e.g., "2mM Arg", "2mM His").
+    
     Args:
         filepath (str): Path to details.txt file
         
@@ -54,8 +57,41 @@ def parse_details(filepath):
         pd.DataFrame: fly_metadata with columns:
             monitor, channel, fly_id, genotype, sex, treatment
     """
-    # Read the details file
-    df = pd.read_csv(filepath, sep='\t')
+    # Read file and parse manually to handle spaces in treatment field
+    rows = []
+    with open(filepath, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    
+    # Skip header line
+    for line in lines[1:]:
+        line = line.strip()
+        if not line:  # Skip empty lines
+            continue
+        
+        # Split on whitespace (handles both tabs and spaces)
+        parts = line.split()
+        
+        if len(parts) < 4:
+            continue  # Skip malformed lines
+        
+        # First 4 parts are: Monitor, Channel, Genotype, Sex
+        # Everything after is Treatment (can contain spaces)
+        monitor = parts[0]
+        channel = parts[1]
+        genotype = parts[2]
+        sex = parts[3]
+        treatment = ' '.join(parts[4:]) if len(parts) > 4 else ''
+        
+        rows.append({
+            'Monitor': monitor,
+            'Channel': channel,
+            'Genotype': genotype,
+            'Sex': sex,
+            'Treatment': treatment
+        })
+    
+    # Create DataFrame
+    df = pd.DataFrame(rows)
     
     # Clean up the data
     df['monitor'] = df['Monitor'].astype(int)
@@ -110,41 +146,64 @@ def parse_monitor_file(filepath, monitor_num):
     movement_types = ['MT', 'CT', 'Pn']
     df_filtered = df[df['movement_type'].isin(movement_types)].copy()
     
-    # Create long format data
-    # Each timestamp has 3 rows (MT, CT, Pn), we want one row per reading type per channel
-    time_series_list = []
+    # Create timestamp key for grouping
+    df_filtered['timestamp_key'] = (
+        df_filtered['id'].astype(str) + '_' + 
+        df_filtered['date'].astype(str) + '_' + 
+        df_filtered['time'].astype(str)
+    )
     
-    # Group by timestamp (id, date, time)
-    for (timestamp_id, date, time), group in df_filtered.groupby(['id', 'date', 'time']):
-        datetime_val = group['datetime'].iloc[0]
-        
-        # Get the three movement types for this timestamp
-        mt_data = group[group['movement_type'] == 'MT'].iloc[0] if 'MT' in group['movement_type'].values else None
-        ct_data = group[group['movement_type'] == 'CT'].iloc[0] if 'CT' in group['movement_type'].values else None
-        pn_data = group[group['movement_type'] == 'Pn'].iloc[0] if 'Pn' in group['movement_type'].values else None
-        
-        # Extract channel values (columns 10-41, which are ch1-ch32)
-        for channel in range(1, 33):
-            channel_col = f'ch{channel}'
-            
-            # Get values for each movement type
-            mt_val = mt_data[channel_col] if mt_data is not None else 0
-            ct_val = ct_data[channel_col] if ct_data is not None else 0
-            pn_val = pn_data[channel_col] if pn_data is not None else 0
-            
-            # Only include if at least one value is non-zero (active channel)
-            if mt_val > 0 or ct_val > 0 or pn_val > 0:
-                # Create 3 rows per channel: one for each reading type
-                for reading, value in [('MT', mt_val), ('CT', ct_val), ('Pn', pn_val)]:
-                    time_series_list.append({
-                        'datetime': datetime_val,
-                        'monitor': monitor_num,
-                        'channel': channel,
-                        'reading': reading,
-                        'value': int(value)
-                    })
+    # Stack channels to long format first (vectorized operation)
+    channel_cols = [f'ch{i}' for i in range(1, 33)]
+    id_vars = ['id', 'date', 'time', 'datetime', 'timestamp_key', 'movement_type']
     
-    time_series_df = pd.DataFrame(time_series_list)
+    df_stacked = df_filtered.melt(
+        id_vars=id_vars,
+        value_vars=channel_cols,
+        var_name='channel',
+        value_name='value'
+    )
+    
+    # Extract channel number from 'ch1', 'ch2', etc.
+    df_stacked['channel'] = df_stacked['channel'].str.replace('ch', '').astype(int)
+    
+    # Pivot to get MT, CT, Pn as columns for each timestamp and channel
+    # This reshapes the data efficiently using vectorized operations
+    df_pivot = df_stacked.pivot_table(
+        index=['id', 'date', 'time', 'datetime', 'timestamp_key', 'channel'],
+        columns='movement_type',
+        values='value',
+        aggfunc='first',
+        fill_value=0
+    ).reset_index()
+    
+    # Flatten MultiIndex columns if present (pivot_table can create MultiIndex)
+    if isinstance(df_pivot.columns, pd.MultiIndex):
+        df_pivot.columns = df_pivot.columns.get_level_values(-1)
+    
+    # Ensure MT, CT, Pn columns exist (fill with 0 if missing)
+    for reading_type in ['MT', 'CT', 'Pn']:
+        if reading_type not in df_pivot.columns:
+            df_pivot[reading_type] = 0
+    
+    # Filter: only keep channels where at least one reading type > 0 (active channel)
+    mask = (df_pivot['MT'] > 0) | (df_pivot['CT'] > 0) | (df_pivot['Pn'] > 0)
+    df_pivot = df_pivot[mask].copy()
+    
+    # Melt to create one row per reading type (MT, CT, Pn)
+    time_series_df = df_pivot.melt(
+        id_vars=['datetime', 'channel'],
+        value_vars=['MT', 'CT', 'Pn'],
+        var_name='reading',
+        value_name='value'
+    )
+    
+    # Add monitor and ensure correct types
+    time_series_df['monitor'] = monitor_num
+    time_series_df['value'] = time_series_df['value'].astype(int)
+    
+    # Select and reorder columns to match original output format
+    time_series_df = time_series_df[['datetime', 'monitor', 'channel', 'reading', 'value']].copy()
     
     return time_series_df
 
@@ -154,7 +213,15 @@ def parse_monitor_file(filepath, monitor_num):
 # ============================================================
 
 # Default file paths (relative to script location)
-DEFAULT_DAM_FILES = ['../../Monitor5.txt', '../../Monitor6.txt']
+def get_default_monitor_files():
+    """Get all monitor files from Monitors_date_filtered folder."""
+    script_dir = Path(__file__).parent
+    monitors_dir = script_dir.parent.parent / 'Monitors_date_filtered'
+    monitor_files = sorted(monitors_dir.glob('Monitor*.txt'))
+    # Use relative path from script_dir (../../Monitors_date_filtered/filename.txt)
+    return [f'../../Monitors_date_filtered/{f.name}' for f in monitor_files] if monitor_files else []
+
+DEFAULT_DAM_FILES = get_default_monitor_files()
 DEFAULT_META_PATH = '../../details.txt'
 # Database-only pipeline - data saved to database only
 
@@ -383,6 +450,10 @@ def calculate_daily_metrics(dam_activity, bin_length_min):
     optional_group_cols = ['exp_day', 'genotype', 'sex', 'treatment']
     group_cols = required_group_cols + [col for col in optional_group_cols if col in dam_activity.columns]
     
+    # Check if COUNTS column exists
+    if 'COUNTS' not in dam_activity.columns:
+        raise ValueError(f"COUNTS column not found in dam_activity. Available columns: {list(dam_activity.columns)}")
+    
     def calc_metrics(group):
         return pd.Series({
             'TOTAL_ACTIVITY': group['COUNTS'].sum(skipna=True),
@@ -392,12 +463,20 @@ def calculate_daily_metrics(dam_activity, bin_length_min):
             'MISSING_FRAC': group['COUNTS'].isna().mean()
         })
     
-    daily_summary = dam_activity.groupby(group_cols, dropna=False).apply(calc_metrics, include_groups=False).reset_index()
+    # Use groupby with include_groups=False to prevent duplicate columns
+    grouped = dam_activity.groupby(group_cols, dropna=False)
+    daily_summary = grouped.apply(calc_metrics, include_groups=False).reset_index()
     
-    # Ensure grouping columns are preserved (reset_index should do this, but double-check)
+    # Ensure grouping columns are preserved
     for col in group_cols:
         if col not in daily_summary.columns:
             raise ValueError(f"Grouping column '{col}' missing from daily_summary result. This should not happen.")
+    
+    # Check if daily_summary is empty or missing columns
+    if len(daily_summary) == 0:
+        raise ValueError(f"No data in daily_summary. dam_activity has {len(dam_activity)} rows. Group cols: {group_cols}")
+    if 'TOTAL_ACTIVITY' not in daily_summary.columns:
+        raise ValueError(f"TOTAL_ACTIVITY column missing. Available columns: {list(daily_summary.columns)}")
     
     return daily_summary
 
@@ -621,11 +700,15 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
             with conn.cursor() as cur:
                 try:
                     # Prepare all data as tuples in memory for bulk insert
-                    flies_tuples = [
-                        (row['fly_id'], row['experiment_id'], row['monitor'], 
-                         row['channel'], row['genotype'], row['sex'], row['treatment'])
-                        for _, row in flies.iterrows()
-                    ]
+                    flies_tuples = list(zip(
+                        flies['fly_id'].astype(str).values.tolist(),
+                        flies['experiment_id'].astype(int).values.tolist(),
+                        flies['monitor'].astype(int).values.tolist(),
+                        flies['channel'].astype(int).values.tolist(),
+                        flies['genotype'].astype(str).values.tolist(),
+                        flies['sex'].astype(str).values.tolist(),
+                        flies['treatment'].astype(str).values.tolist()
+                    ))
                     
                     # Single bulk insert operation (much faster than row-by-row)
                     execute_values(
@@ -718,18 +801,25 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
             health_cols = ['fly_id', 'experiment_id', 'report_date', 'status']
             health_df = health_db[health_cols].copy()
             
+            # Ensure report_date is a date object (PostgreSQL expects date type)
+            if len(health_df) > 0:
+                # Check if dates need conversion (if not already date objects)
+                sample_date = health_df['report_date'].iloc[0]
+                if not isinstance(sample_date, date):
+                    health_df['report_date'] = pd.to_datetime(health_df['report_date']).dt.date
+            
             # Use bulk insert with ON CONFLICT to handle duplicates
             with psycopg2.connect(**DB_CONFIG) as conn:
                 with conn.cursor() as cur:
                     try:
                         # Prepare all data as tuples for bulk insert
-                        # Ensure report_date is a date object (PostgreSQL expects date type)
-                        health_tuples = [
-                            (row['fly_id'], row['experiment_id'], 
-                             row['report_date'] if isinstance(row['report_date'], date) else pd.to_datetime(row['report_date']).date(),
-                             row['status'])
-                            for _, row in health_df.iterrows()
-                        ]
+
+                        health_tuples = list(zip(
+                            health_df['fly_id'].astype(str).values.tolist(),
+                            health_df['experiment_id'].astype(int).values.tolist(),
+                            health_df['report_date'].values.tolist(),  # Already date objects, just convert to list
+                            health_df['status'].astype(str).values.tolist()
+                        ))
                         
                         # Single bulk insert operation
                         execute_values(
@@ -955,7 +1045,25 @@ def prepare_data_and_health(
             sys.exit(1)
         
         # Extract monitor number from filename
-        monitor_num = int(''.join(filter(str.isdigit, Path(dam_file).stem)))
+        # Handle both "Monitor51.txt" and "Monitor51_06_20_25.txt" formats
+        filename = Path(dam_file).stem
+        # Remove "Monitor" prefix and extract first number before underscore or end
+        if filename.startswith('Monitor'):
+            monitor_str = filename[7:]  # Remove "Monitor" (7 chars)
+            # Extract digits until underscore or end
+            monitor_num_str = ''
+            for char in monitor_str:
+                if char.isdigit():
+                    monitor_num_str += char
+                elif char == '_':
+                    break
+                else:
+                    break
+            monitor_num = int(monitor_num_str) if monitor_num_str else int(''.join(filter(str.isdigit, filename)))
+        else:
+            # Fallback: extract all digits (old behavior)
+            monitor_num = int(''.join(filter(str.isdigit, filename)))
+        
         monitor_data = parse_monitor_file(dam_file, monitor_num)
         time_series_list.append(monitor_data)
     
@@ -984,6 +1092,9 @@ def prepare_data_and_health(
     )
     
     # STEP 1.4: Calculate exp_day
+    # Ensure actual_exp_start is not None (use minimum date from data if needed)
+    if actual_exp_start is None:
+        actual_exp_start = pd.to_datetime(dam_merged['datetime']).dt.date.min()
     dam_merged['exp_day'] = calculate_exp_day_global(dam_merged, actual_exp_start)
     
     # STEP 1.5: Prepare data for output

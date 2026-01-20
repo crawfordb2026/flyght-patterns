@@ -34,6 +34,9 @@ def parse_details(filepath):
     """
     Parse details.txt to extract fly metadata.
     
+    Handles space-separated or tab-separated values. Treatment (last column)
+    can contain spaces (e.g., "2mM Arg", "2mM His").
+    
     Args:
         filepath (str): Path to details.txt file
         
@@ -43,8 +46,41 @@ def parse_details(filepath):
     """
     print(f"📋 Parsing metadata from {filepath}...")
     
-    # Read the details file
-    df = pd.read_csv(filepath, sep='\t')
+    # Read file and parse manually to handle spaces in treatment field
+    rows = []
+    with open(filepath, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    
+    # Skip header line
+    for line in lines[1:]:
+        line = line.strip()
+        if not line:  # Skip empty lines
+            continue
+        
+        # Split on whitespace (handles both tabs and spaces)
+        parts = line.split()
+        
+        if len(parts) < 4:
+            continue  # Skip malformed lines
+        
+        # First 4 parts are: Monitor, Channel, Genotype, Sex
+        # Everything after is Treatment (can contain spaces)
+        monitor = parts[0]
+        channel = parts[1]
+        genotype = parts[2]
+        sex = parts[3]
+        treatment = ' '.join(parts[4:]) if len(parts) > 4 else ''
+        
+        rows.append({
+            'Monitor': monitor,
+            'Channel': channel,
+            'Genotype': genotype,
+            'Sex': sex,
+            'Treatment': treatment
+        })
+    
+    # Create DataFrame
+    df = pd.DataFrame(rows)
     
     # Clean up the data
     df['monitor'] = df['Monitor'].astype(int)
@@ -159,10 +195,18 @@ def parse_monitor_file(filepath, monitor_num):
 # ============================================================
 
 # Default file paths (relative to script location)
-DEFAULT_DAM_FILES = ['../../Monitor5.txt', '../../Monitor6.txt']
+def get_default_monitor_files():
+    """Get all monitor files from Monitors_date_filtered folder."""
+    script_dir = Path(__file__).parent
+    monitors_dir = script_dir.parent.parent / 'Monitors_date_filtered'
+    monitor_files = sorted(monitors_dir.glob('Monitor*.txt'))
+    # Use relative path from script_dir (../../Monitors_date_filtered/filename.txt)
+    return [f'../../Monitors_date_filtered/{f.name}' for f in monitor_files] if monitor_files else []
+
+DEFAULT_DAM_FILES = get_default_monitor_files()
 DEFAULT_META_PATH = '../../details.txt'
-DEFAULT_OUTPUT_DATA = '../../data/processed/dam_data_prepared.csv'
-DEFAULT_OUTPUT_HEALTH = '../../data/processed/health_report.csv'
+DEFAULT_OUTPUT_DATA = 'data/processed/dam_data_prepared.csv'
+DEFAULT_OUTPUT_HEALTH = 'data/processed/health_report.csv'
 
 # Light cycle settings
 DEFAULT_LIGHTS_ON = 9
@@ -646,7 +690,25 @@ def prepare_data_and_health(
             sys.exit(1)
         
         # Extract monitor number from filename
-        monitor_num = int(''.join(filter(str.isdigit, Path(dam_file).stem)))
+        # Handle both "Monitor51.txt" and "Monitor51_06_20_25.txt" formats
+        filename = Path(dam_file).stem
+        # Remove "Monitor" prefix and extract first number before underscore or end
+        if filename.startswith('Monitor'):
+            monitor_str = filename[7:]  # Remove "Monitor" (7 chars)
+            # Extract digits until underscore or end
+            monitor_num_str = ''
+            for char in monitor_str:
+                if char.isdigit():
+                    monitor_num_str += char
+                elif char == '_':
+                    break
+                else:
+                    break
+            monitor_num = int(monitor_num_str) if monitor_num_str else int(''.join(filter(str.isdigit, filename)))
+        else:
+            # Fallback: extract all digits (old behavior)
+            monitor_num = int(''.join(filter(str.isdigit, filename)))
+        
         monitor_data = parse_monitor_file(dam_file, monitor_num)
         time_series_list.append(monitor_data)
     

@@ -14,14 +14,16 @@ import os
 
 def create_database():
     """Create the database if it doesn't exist."""
-    with psycopg2.connect(
+    conn = psycopg2.connect(
         host=DB_CONFIG['host'],
         port=DB_CONFIG['port'],
         user=DB_CONFIG['user'],
         password=DB_CONFIG['password'],
         database='postgres'
-    ) as conn:
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    )
+    # Set isolation level to autocommit BEFORE using the connection
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    try:
         with conn.cursor() as cur:
             cur.execute(f"SELECT 1 FROM pg_database WHERE datname = %s", (DB_CONFIG['database'],))
             if not cur.fetchone():
@@ -29,6 +31,8 @@ def create_database():
                 print(f"Created database: {DB_CONFIG['database']}")
             else:
                 print(f"Database {DB_CONFIG['database']} already exists")
+    finally:
+        conn.close()
 
 def create_schema():
     """Execute schema.sql to create all tables and indexes."""

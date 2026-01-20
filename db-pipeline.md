@@ -4,55 +4,64 @@ Visual overview of how the system works:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    YOUR COMPUTER                                 │
-│                                                                   │
+│                    YOUR COMPUTER                                │
+│                                                                 │
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │  FILESYSTEM (Raw Data)                                   │   │
-│  │  ├── Monitor1.txt  (huge file, ~800K rows)              │   │
-│  │  ├── Monitor2.txt                                        │   │
-│  │  ├── ...                                                  │   │
-│  │  ├── Monitor30.txt                                       │   │
-│  │  └── metadata.txt  (small file, ~960 rows)              │   │
+│  │  ├── Monitors_raw/                                       │   │
+│  │  │   ├── Monitor1.txt  (huge file, ~800K rows)           │   │
+│  │  │   ├── Monitor2.txt                                    │   │
+│  │  │   └── ...                                             │   │
+│  │  ├── Monitors_date_filtered/ (optional, Step 0 output)   │   │
+│  │  │   ├── Monitor1_06_20_25.txt                          │   │
+│  │  │   └── ...                                             │   │
+│  │  └── details.txt  (small file, ~960 rows)               │   │
 │  └──────────────────────────────────────────────────────────┘   │
-│                            │                                     │
-│                            ▼                                     │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │  PYTHON PIPELINE (Pandas Processing)                      │ │
-│  │  ┌────────────────────────────────────────────────────┐ │ │
-│  │  │ Step 1: prepare_data_and_health.py                 │ │ │
-│  │  │ • Parse Monitor*.txt files                          │ │ │
-│  │  │ • Convert to long format (MT, CT, Pn)              │ │ │
-│  │  │ • Join with metadata                                │ │ │
-│  │  │ • Generate health reports                           │ │ │
-│  │  └────────────────────────────────────────────────────┘ │ │
-│  │                    │                                       │ │
-│  │                    ▼                                       │ │
-│  │            [Insert to TimescaleDB]                       │ │
-│  └────────────────────┬──────────────────────────────────────┘ │
-│                       │                                        │
-│                       ▼                                        │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │  TIMESCALEDB DATABASE                                      │ │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │ │
-│  │  │  readings    │  │ health_reports│ │  features    │    │ │
-│  │  │  (24M rows)  │  │  (few rows)   │ │  (960 rows)  │    │ │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘    │ │
-│  └────────────────────┬──────────────────────────────────────┘ │
-│                       │                                        │
-│                       ▼                                        │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │  PYTHON ANALYSIS (Pandas + scikit-learn)                 │ │
-│  │  • Load small features table                             │ │
-│  │  • PCA, UMAP, DBSCAN                                     │ │
-│  │  • Statistical tests                                     │ │
-│  │  • Visualizations                                        │ │
-│  └──────────────────────────────────────────────────────────┘ │
+│                            │                                    │
+│                            ▼                                    │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  PYTHON PIPELINE (Pandas Processing)                     │   │
+│  │  ┌────────────────────────────────────────────────────┐  │   │
+│  │  │ Step 0: filter_dates.py (optional)                │  │   │
+│  │  │ • Filter Monitor*.txt files by date range         │  │   │
+│  │  └────────────────────────────────────────────────────┘  │   │
+│  │                    │                                     │   │
+│  │  ┌────────────────────────────────────────────────────┐  │   │
+│  │  │ Step 1: prepare_data_and_health.py                 │  │   │
+│  │  │ • Parse Monitor*.txt files from Monitors_date_     │  │   │
+│  │  │   filtered/ (or Monitors_raw/)                     │  │   │
+│  │  │ • Convert to long format (MT, CT, Pn)              │  │   │
+│  │  │ • Join with metadata (details.txt)                │  │   │
+│  │  │ • Generate health reports                          │  │   │
+│  │  └────────────────────────────────────────────────────┘  │   │
+│  │                    │                                     │   │
+│  │                    ▼                                     │   │
+│  │            [Insert to TimescaleDB]                       │   │
+│  └────────────────────┬─────────────────────────────────────┘   │
+│                       │                                         │  
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  TIMESCALEDB DATABASE                                    │   │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │   │
+│  │  │  readings    │  │ health_reports│ │  features    │    │   │
+│  │  │  (24M rows)  │  │  (few rows)   │ │  (960 rows)  │    │   │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘    │   │
+│  └────────────────────┬─────────────────────────────────────┘   │
+│                       │                                         │
+│                       ▼                                         │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │  PYTHON ANALYSIS (Pandas + scikit-learn)                 │   │
+│  │  • Load small features table                             │   │
+│  │  • PCA, UMAP, DBSCAN                                     │   │
+│  │  • Statistical tests                                     │   │
+│  │  • Visualizations                                        │   │
+│  └──────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Data flow
 
-### Step 1: Raw files → database (`1-prepare_data_and_health.py`)
+### Step 0: Date filtering (optional) (`0-filter_dates.py`)
 
 ```
 ┌─────────────┐
@@ -65,7 +74,7 @@ Visual overview of how the system works:
 │ (800K rows) │     │
 └─────────────┘     │
                     │
-      ...           │  [Pandas reads files sequentially]
+      ...           │  [Filter by date range]
                     │
 ┌─────────────┐     │
 │MonitorN.txt │  ───┘
@@ -73,21 +82,48 @@ Visual overview of how the system works:
 └─────────────┘
         │
         ▼
-┌─────────────────────────────────────────┐
-│  PANDAS PROCESSING                      │
-│  ┌──────────────────────────────────┐ │
-│  │ Parse each file                   │ │
-│  │ • Read tab-separated values       │ │
-│  │ • Extract datetime, channels      │ │
-│  │ • Convert to long format          │ │
-│  │   (MT, CT, Pn as separate rows)   │ │
-│  └──────────────────────────────────┘ │
+┌────────────────────────────────────────┐
+│  DATE FILTERING                        │
+│  • Extract date range from filename    │
+│  • Filter rows within date range       │
+│  • Preserve exact line formatting      │
+└──────────────┬─────────────────────────┘
+               │
+               ▼
+┌────────────────────────────────────────┐
+│  Monitors_date_filtered/               │
+│  ├── Monitor1_06_20_25.txt            │
+│  ├── Monitor2_06_20_25.txt            │
+│  └── ...                               │
+└────────────────────────────────────────┘
+```
+
+### Step 1: Raw files → database (`1-prepare_data_and_health.py`)
+
+```
+┌────────────────────────────────────────┐
+│  Monitors_date_filtered/               │
+│  ├── Monitor1_06_20_25.txt            │
+│  ├── Monitor2_06_20_25.txt            │
+│  └── ...                               │
+└──────────────┬─────────────────────────┘
+               │
+               ▼
+┌────────────────────────────────────────┐
+│  PANDAS PROCESSING                     │
+│  ┌──────────────────────────────────┐  │
+│  │ Parse each file                  │  │
+│  │ • Read tab-separated values      │  │
+│  │ • Extract datetime, channels     │  │
+│  │ • Convert to long format         │  │
+│  │   (MT, CT, Pn as separate rows)  │  │
+│  └──────────────────────────────────┘  │
 │              │                         │
 │              ▼                         │
-│  ┌──────────────────────────────────┐ │
-│  │ Join with metadata               │ │
-│  │ • Add fly_id, genotype, etc.    │ │
-│  └──────────────────────────────────┘ │
+│  ┌──────────────────────────────────┐  │
+│  │ Join with metadata               │  │
+│  │ • Add fly_id, genotype, etc.     │  │
+│  └──────────────────────────────────┘  │
 └──────────────┬─────────────────────────┘
                │
                ▼
@@ -118,13 +154,13 @@ Visual overview of how the system works:
                ▼
 ┌─────────────────────────────────────────┐
 │  PANDAS: Filter flies                   │
-│  ┌──────────────────────────────────┐ │
-│  │ Remove based on:                  │ │
-│  │ • Health status (Dead, Unhealthy) │ │
-│  │ • Specific fly IDs                │ │
-│  │ • Metadata (genotype, sex, etc.)  │ │
-│  │ • Per-fly day removal             │ │
-│  └──────────────────────────────────┘ │
+│  ┌───────────────────────────────────┐  │
+│  │ Remove based on:                  │  │
+│  │ • Health status (Dead, Unhealthy) │  │
+│  │ • Specific fly IDs                │  │
+│  │ • Metadata (genotype, sex, etc.)  │  │
+│  │ • Per-fly day removal             │  │
+│  └───────────────────────────────────┘  │
 └──────────────┬──────────────────────────┘
                │
                ▼
@@ -142,41 +178,41 @@ Step 2 is optional and uses health reports to filter flies.
 ```
 ┌─────────────────────────────────────────┐
 │  TIMESCALEDB: readings table            │
-│  (filtered: dead flies removed)          │
+│  (filtered: dead flies removed)         │
 └──────────────┬──────────────────────────┘
                │
                ▼
-┌─────────────────────────────────────────┐
-│  PANDAS: Feature Extraction             │
-│                                         │
-│  ┌──────────────────────────────────┐ │
-│  │ SLEEP FEATURES                   │ │
-│  │ Group by: fly_id, day             │ │
-│  │ Calculate:                        │ │
-│  │ • Total sleep (minutes)            │ │
-│  │ • Number of sleep bouts           │ │
-│  │ • Mean bout length                │ │
-│  │ • Sleep latency                   │ │
-│  │ • WASO (wake after sleep onset)   │ │
-│  │ • Fragmentation                   │ │
-│  └──────────────────────────────────┘ │
-│              │                          │
-│  ┌──────────────────────────────────┐ │
+┌────────────────────────────────────────┐
+│  PANDAS: Feature Extraction            │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │ SLEEP FEATURES                   │  │
+│  │ Group by: fly_id, day            │  │
+│  │ Calculate:                       │  │
+│  │ • Total sleep (minutes)          │  │
+│  │ • Number of sleep bouts          │  │
+│  │ • Mean bout length               │  │
+│  │ • Sleep latency                  │  │
+│  │ • WASO (wake after sleep onset)  │  │
+│  │ • Fragmentation                  │  │
+│  └──────────────────────────────────┘  │
+│              │                         │
+│  ┌───────────────────────────────────┐ │
 │  │ CIRCADIAN FEATURES                │ │
 │  │ Group by: fly_id, day             │ │
-│  │ Calculate hourly totals            │ │
-│  │ Fit cosinor regression:            │ │
+│  │ Calculate hourly totals           │ │
+│  │ Fit cosinor regression:           │ │
 │  │ • Mesor (baseline)                │ │
 │  │ • Amplitude (rhythm strength)     │ │
-│  │ • Phase (peak timing)              │ │
-│  └──────────────────────────────────┘ │
-│              │                          │
-│              ▼                          │
-│  ┌──────────────────────────────────┐ │
-│  │ Aggregate to per-fly means       │ │
-│  │ (average across all days)         │ │
-│  └──────────────────────────────────┘ │
-└──────────────┬──────────────────────────┘
+│  │ • Phase (peak timing)             │ │
+│  └───────────────────────────────────┘ │
+│              │                         │
+│              ▼                         │
+│  ┌──────────────────────────────────┐  │
+│  │ Aggregate to per-fly means       │  │
+│  │ (average across all days)        │  │
+│  └──────────────────────────────────┘  │
+└──────────────┬─────────────────────────┘
                │
                ▼
 ┌─────────────────────────────────────────┐
@@ -205,12 +241,12 @@ Step 2 is optional and uses health reports to filter flies.
                ▼
 ┌─────────────────────────────────────────┐
 │  PANDAS: Clean & Normalize              │
-│  ┌──────────────────────────────────┐ │
-│  │ Remove problematic flies:          │ │
-│  │ • Zero total sleep                 │ │
-│  │ • Zero sleep bouts                 │ │
-│  │ • Zero/NaN P_doze                  │ │
-│  └──────────────────────────────────┘ │
+│  ┌──────────────────────────────────┐   │
+│  │ Remove problematic flies:         │  │
+│  │ • Zero total sleep                │  │
+│  │ • Zero sleep bouts                │  │
+│  │ • Zero/NaN P_doze                 │  │
+│  └──────────────────────────────────┘   │
 │              │                          │
 │  ┌──────────────────────────────────┐ │
 │  │ Remove IQR outliers               │ │
@@ -235,7 +271,7 @@ Step 2 is optional and uses health reports to filter flies.
 │  (z-scored, ready for ML)               │
 │  ┌────────────────────────────────────┐ │
 │  │ fly_id │ total_sleep_z │ bouts_z │...│ │
-│  │────────┼───────────────┼──────────┼───│ │
+│  │────────┼───────────────┼──────────┼──│ │
 │  │M1_Ch01 │    0.234      │  -0.156 │...│ │
 │  │M1_Ch02 │   -0.567      │   0.891 │...│ │
 │  │  ...   │     ...       │   ...   │...│ │
@@ -304,42 +340,54 @@ TIMESCALEDB DATABASE
 ## Pipeline file structure
 
 ```
-Python/src/db-pipeline/
+Python/
 │
-├── config.py                    # Database configuration
-│   └── DB_CONFIG, DATABASE_URL, USE_DATABASE
+├── Monitors_raw/                # Raw monitor files (input)
+│   ├── Monitor51.txt
+│   ├── Monitor52.txt
+│   └── ...
 │
-├── setup_database.py            # Database setup script
-│   └── Creates database and runs schema.sql
+├── Monitors_date_filtered/      # Date-filtered monitor files (Step 0 output)
+│   ├── Monitor51_06_20_25.txt
+│   ├── Monitor52_06_20_25.txt
+│   └── ...
 │
-├── schema.sql                   # Database schema definition
-│   └── All table definitions and indexes
+├── details.txt                  # Metadata file (fly_id, genotype, sex, treatment)
 │
-├── 1-prepare_data_and_health.py # Step 1: Load data & health reports
-│   └── Parses Monitor*.txt files, creates readings & health_reports
-│
-├── 2-remove_flies.py            # Step 2: Optional fly removal
-│   └── Filters flies based on health status, metadata, etc.
-│
-├── 3-create_feature_table.py    # Step 3: Feature extraction
-│   └── Extracts sleep and circadian features, creates features table
-│
-├── 4-clean_ml_features.py       # Step 4: Clean & normalize
-│   └── Removes outliers, fixes NaN, creates z-scored features_z table
-│
-├── delete_experiment.py        # Utility: Delete experiment from database
-│   └── Removes all data for a given experiment_id
-│
-└── analysis/                   # Analysis scripts
-    ├── pca_analysis.py         # PCA analysis on features_z
-    ├── umap_dbscan_analysis.py # UMAP and DBSCAN clustering
-    └── sexdiff_analysis.py     # Sex difference analysis
+└── src/db-pipeline/
+    │
+    ├── config.py                    # Database configuration
+    │   └── DB_CONFIG, DATABASE_URL, USE_DATABASE
+    │
+    ├── setup_database.py            # Database setup script
+    │   └── Creates database and runs schema.sql
+    │
+    ├── schema.sql                   # Database schema definition
+    │   └── All table definitions and indexes
+    │
+    ├── 0-filter_dates.py            # Step 0: Filter monitor files by date range
+    │   └── Filters Monitor*.txt files to specified date range
+    │
+    ├── 1-prepare_data_and_health.py # Step 1: Load data & health reports
+    │   └── Parses Monitor*.txt files from Monitors_date_filtered, creates readings & health_reports
+    │
+    ├── 2-remove_flies.py            # Step 2: Optional fly removal
+    │   └── Filters flies based on health status, metadata, etc.
+    │
+    ├── 3-create_feature_table.py    # Step 3: Feature extraction
+    │   └── Extracts sleep and circadian features, creates features table
+    │
+    ├── 4-clean_ml_features.py       # Step 4: Clean & normalize
+    │   └── Removes outliers, fixes NaN, creates z-scored features_z table
+    │
+    └── delete_experiment.py        # Utility: Delete an experiment
+        └── Deletes all data for a given experiment_id
 ```
 
 ## Usage
 
-### 0. Install TimescaleDB (Required)
-TimescaleDB is a PostgreSQL extension required for time-series data optimization. Install it before setting up the database:
+### 0. Install TimescaleDB
+TimescaleDB is a PostgreSQL extension used for time-series data optimization. Install it before setting up the database:
 
 **macOS (Homebrew):**
 ```bash
@@ -367,32 +415,41 @@ Set environment variables or modify `config.py`:
 
 ### 3. Run pipeline steps
 ```bash
+# Step 0: (Optional) Filter monitor files by date range
+# This step filters raw monitor files to a specific date range
+# Output files are saved to Monitors_date_filtered/
+python3 0-filter_dates.py --input Monitor51 --start "06/21/25" --days 5
+
 # Step 1: Load raw data and generate health reports
+# By default, loads all Monitor*.txt files from Monitors_date_filtered/
+# and metadata from details.txt
 python3 1-prepare_data_and_health.py
 
 # Step 2: (Optional) Remove flies
 python3 2-remove_flies.py --statuses "Dead,Unhealthy"
-# Optional: --experiment-id specifies which experiment to use (default uses latest experiment)  
+# Optional: --experiment-id specifies which experiment to use (default: latest experiment)
 python3 2-remove_flies.py --experiment-id 1 --statuses "Dead"
 
 # Step 3: Extract features
 python3 3-create_feature_table.py
+# Optional: --experiment-id specifies which experiment to use (default: latest experiment)
+python3 3-create_feature_table.py --experiment-id 1
 
 # Step 4: Clean and normalize features
 python3 4-clean_ml_features.py
+# Optional: --experiment-id specifies which experiment to use (default: latest experiment)
+python3 4-clean_ml_features.py --experiment-id 1
 ```
 
-### 4. Utility scripts
-
-**Delete an experiment:**
+### 4. Delete an experiment (optional)
 ```bash
 # List all experiments
 python3 delete_experiment.py --list
 
-# Delete an experiment (will prompt for confirmation)
+# Delete an experiment (with confirmation prompt)
 python3 delete_experiment.py --experiment-id 1
 
-# Delete without confirmation prompt
+# Delete without confirmation (use with caution)
 python3 delete_experiment.py --experiment-id 1 --confirm
 ```
 
@@ -443,25 +500,40 @@ python3 delete_experiment.py --experiment-id 1 --confirm
 START
  │
  ▼
-┌─────────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────────┐
+│  STEP 0: filter_dates.py (OPTIONAL)                       │
+│  • Filter Monitor*.txt files by date range                │
+│  • Input: Monitors_raw/                                    │
+│  • Output: Monitors_date_filtered/                         │
+│  • Preserves exact line formatting                         │
+│  ⏱️ Time: ~1-2 minutes per monitor file (depends on size)  │
+└────────────────────┬───────────────────────────────────────┘
+                     │
+                     ▼
+┌────────────────────────────────────────────────────────────┐
 │  STEP 1: prepare_data_and_health.py                        │
-│  • Read Monitor*.txt files (sequential)                    │
-│  • Parse with pandas                                        │
-│  • Convert to long format (MT, CT, Pn)                      │
-│  • Join with metadata (details.txt)                         │
-│  • Generate health reports                                  │
+│  • Read Monitor*.txt files from Monitors_date_filtered/   │
+│    (or Monitors_raw/ if Step 0 not run)                     │
+│  • Parse with pandas                                       │
+│  • Convert to long format (MT, CT, Pn)                     │
+│  • Join with metadata (details.txt)                        │
+│  • Generate health reports                                 │
+│  • Create new experiment                                   │
 │  • Insert into TimescaleDB:                                │
-│    - experiments, flies, readings, health_reports           │
-│  ⏱️ Time: ~20-30 minutes                                    │
-└────────────────────┬────────────────────────────────────────┘
+│    - experiments, flies, readings, health_reports          │
+│  • By default, loads all Monitor*.txt files from         │
+│    Monitors_date_filtered/                                 │
+│  ⏱️ Time: ~5-15 minutes (depends on size of data set)      │
+└────────────────────┬───────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  STEP 2: remove_flies.py (OPTIONAL)                        │
-│  • Query readings from database                            │
-│  • Filter based on health status, metadata, etc.          │
-│  • Updates readings table (removes filtered rows)          │
-│  ⏱️ Time: ~1-2 minutes                                     │
+│  STEP 2: remove_flies.py (OPTIONAL)                         │
+│  • Query readings from database                             │
+│  • Filter based on health status, metadata, etc.            │
+│  • Delete filtered rows from all related tables             │
+│  • Supports --experiment-id (default: latest)               │
+│  ⏱️ Time: ~1-2 minutes                                      │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -471,7 +543,8 @@ START
 │  • Calculate sleep features (pandas)                       │
 │  • Calculate circadian features (cosinor regression)       │
 │  • Aggregate to per-fly means                             │
-│  • Insert into TimescaleDB.features                        │
+│  • Insert/update into TimescaleDB.features                 │
+│  • Supports --experiment-id (default: latest)              │
 │  ⏱️ Time: ~10-15 minutes                                   │
 └────────────────────┬────────────────────────────────────────┘
                      │
@@ -483,7 +556,9 @@ START
 │  • Remove IQR outliers                                      │
 │  • Fix NaN values                                           │
 │  • Z-score normalization                                    │
-│  • Insert into TimescaleDB.features_z                      │
+│  • Insert/update into TimescaleDB.features_z               │
+│  • Supports --experiment-id (default: latest)              │
+│  • Saves diagnostics file (ML_features_clean_diagnostics)  │
 │  ⏱️ Time: ~1-2 minutes                                     │
 └────────────────────┬────────────────────────────────────────┘
                      │
@@ -533,19 +608,31 @@ START
 
 ## Key features
 
+- **Automatic experiment creation**: Step 1 creates a new experiment with timestamp-based name
+- **Multiple experiments**: Support for multiple experiments in one database
+- **Experiment selection**: All steps support `--experiment-id` flag (default: latest)
 - **Health report generation**: Automatic detection of dead/unhealthy flies
 - **Feature extraction**: Sleep and circadian rhythm features
 - **Data cleaning**: Automatic outlier removal and normalization
 - **Z-scoring**: Features normalized for ML analysis
-- **Multiple experiments**: Support for multiple experiments in one database
-- **Experiment management**: Delete experiments and all associated data
+- **Bulk operations**: Optimized database inserts using COPY FROM and execute_values
+- **Context managers**: Safe connection handling with automatic cleanup
+- **Experiment deletion**: Utility script to delete experiments and all associated data
 
 ## Notes
 
+- **Step 0 (filter_dates.py) is optional** but recommended for filtering monitor files by date range before processing
+- **File locations:**
+  - Raw monitor files: `Python/Monitors_raw/`
+  - Date-filtered files: `Python/Monitors_date_filtered/` (Step 0 output)
+  - Metadata file: `Python/details.txt`
+- **Step 1 automatically loads all Monitor*.txt files** from `Monitors_date_filtered/` by default
 - The pipeline uses **pandas** for all data processing
 - Files are processed **sequentially** (not in parallel)
 - Health reports are generated in **Step 1**, not Step 2
-- Step 2 is **optional** and used to filter flies based on health status
+- Step 2 is **optional** but typically used to filter flies based on health status
 - All data is stored in **TimescaleDB** (no intermediate CSV files)
 - The `USE_DATABASE` flag allows running without database (for testing)
-- TimescaleDB extension is optional - schema works with regular PostgreSQL
+- **Step 1 automatically creates a new experiment** with a timestamp-based name
+- **All steps support `--experiment-id`** to work with a specific experiment (default: latest)
+- **Multiple experiments** can coexist in the same database

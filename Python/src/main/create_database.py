@@ -31,6 +31,9 @@ def parse_details(filepath):
     """
     Parse details.txt to extract fly metadata.
     
+    Handles space-separated or tab-separated values. Treatment (last column)
+    can contain spaces (e.g., "2mM Arg", "2mM His").
+    
     Args:
         filepath (str): Path to details.txt file
         
@@ -40,8 +43,41 @@ def parse_details(filepath):
     """
     print(f"📋 Parsing metadata from {filepath}...")
     
-    # Read the details file
-    df = pd.read_csv(filepath, sep='\t')
+    # Read file and parse manually to handle spaces in treatment field
+    rows = []
+    with open(filepath, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    
+    # Skip header line
+    for line in lines[1:]:
+        line = line.strip()
+        if not line:  # Skip empty lines
+            continue
+        
+        # Split on whitespace (handles both tabs and spaces)
+        parts = line.split()
+        
+        if len(parts) < 4:
+            continue  # Skip malformed lines
+        
+        # First 4 parts are: Monitor, Channel, Genotype, Sex
+        # Everything after is Treatment (can contain spaces)
+        monitor = parts[0]
+        channel = parts[1]
+        genotype = parts[2]
+        sex = parts[3]
+        treatment = ' '.join(parts[4:]) if len(parts) > 4 else ''
+        
+        rows.append({
+            'Monitor': monitor,
+            'Channel': channel,
+            'Genotype': genotype,
+            'Sex': sex,
+            'Treatment': treatment
+        })
+    
+    # Create DataFrame
+    df = pd.DataFrame(rows)
     
     # Clean up the data
     df['monitor'] = df['Monitor'].astype(int)
@@ -177,8 +213,8 @@ def main():
     print("-" * 40)
     
     # Parse both monitor files
-    monitor5_data = parse_monitor_file('../../Monitor5.txt', 5)
-    monitor6_data = parse_monitor_file('../../Monitor6.txt', 6)
+    monitor5_data = parse_monitor_file('../../Monitors_raw/Monitor5.txt', 5)
+    monitor6_data = parse_monitor_file('../../Monitors_raw/Monitor6.txt', 6)
     
     # Combine into single time-series table
     time_series_data = pd.concat([monitor5_data, monitor6_data], ignore_index=True)

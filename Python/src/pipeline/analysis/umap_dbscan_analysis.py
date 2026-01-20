@@ -1003,7 +1003,7 @@ Examples:
     # Auto-detect input file if not provided
     if args.input is None:
         script_dir = Path(__file__).parent
-        default_input = script_dir.parent.parent / 'data' / 'processed' / 'ML_features_Z.csv'
+        default_input = script_dir.parent / 'data' / 'processed' / 'ML_features_Z.csv'
         if default_input.exists():
             args.input = str(default_input)
         else:

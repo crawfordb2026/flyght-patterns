@@ -314,30 +314,28 @@ def run_diagnostics(ML_features_clean):
     
     # 2. Check for NaN
     nan_summary = {}
-    for col in df.select_dtypes(include='number').columns:
-        nan_count = df[col].apply(lambda x: np.isnan(x) if isinstance(x, (int, float)) else False).sum()
+    numeric_cols = df.select_dtypes(include='number').columns
+    for col in numeric_cols:
+        nan_count = pd.isna(df[col]).sum()
         if nan_count > 0:
-            nan_summary[col] = nan_count
+            nan_summary[col] = int(nan_count)
     diagnostics['NaN_summary'] = nan_summary
     
     # 3. List flies with any NaN
-    nan_flies = df[df.select_dtypes(include=[np.number]).apply(
-        lambda row: any(np.isnan(x) if isinstance(x, (int, float)) else False for x in row), axis=1
-    )]
+    numeric_df = df.select_dtypes(include=[np.number])
+    nan_flies = df[pd.isna(numeric_df).any(axis=1)]
     diagnostics['flies_with_NaN'] = nan_flies[['fly_id', 'genotype', 'sex', 'treatment']].copy() if len(nan_flies) > 0 else pd.DataFrame()
     
     # 4. Which columns have NaN
     nan_columns = []
-    for col in df.select_dtypes(include='number').columns:
-        if df[col].apply(lambda x: np.isnan(x) if isinstance(x, (int, float)) else False).any():
+    for col in numeric_cols:
+        if pd.isna(df[col]).any():
             nan_columns.append(col)
     diagnostics['NaN_columns'] = nan_columns
     
     # 5. Diagnose fragmentation metrics
     frag_cols = ['frag_bouts_per_hour_mean', 'frag_bouts_per_min_sleep_mean']
-    frag_nan = df[df[frag_cols].apply(
-        lambda row: any(np.isnan(x) if isinstance(x, (int, float)) else False for x in row), axis=1
-    )]
+    frag_nan = df[pd.isna(df[frag_cols]).any(axis=1)]
     diagnostics['frag_problems'] = frag_nan[['fly_id', 'genotype', 'sex', 'treatment'] + frag_cols].copy() if len(frag_nan) > 0 else pd.DataFrame()
     
     # 6. Diagnose sleep bout structure
@@ -494,10 +492,11 @@ def clean_ml_features(
                 with conn.cursor() as cur:
                     try:
                         # Prepare tuples for bulk update
-                        update_tuples = [
-                            tuple(row[col] for col in ['fly_id', 'experiment_id'] + feature_cols)
-                            for _, row in update_data.iterrows()
-                        ]
+                        all_cols_list = ['fly_id', 'experiment_id'] + feature_cols
+                        # Convert each column to list
+                        column_lists = [update_data[col].values.tolist() for col in all_cols_list]
+                        # Zip columns together to create tuples
+                        update_tuples = list(zip(*column_lists))
                         
                         # Build UPSERT query (INSERT ... ON CONFLICT DO UPDATE)
                         all_cols = ['fly_id', 'experiment_id'] + feature_cols
@@ -561,10 +560,9 @@ def clean_ml_features(
                     with conn.cursor() as cur:
                         try:
                             # Prepare tuples for bulk insert/update
-                            z_features_tuples = [
-                                tuple(row[col] for col in z_db_columns)
-                                for _, row in ML_features_Z_db.iterrows()
-                            ]
+                            column_lists = [ML_features_Z_db[col].values.tolist() for col in z_db_columns]
+                            # Zip columns together to create tuples
+                            z_features_tuples = list(zip(*column_lists))
                             
                             # Build UPSERT query (INSERT ... ON CONFLICT DO UPDATE)
                             insert_cols = ', '.join(z_db_columns)

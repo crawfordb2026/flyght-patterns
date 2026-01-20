@@ -43,9 +43,9 @@ from pathlib import Path
 # ============================================================
 
 # Default file paths
-DEFAULT_INPUT = '../../data/processed/dam_data_prepared.csv'
-DEFAULT_HEALTH_REPORT = '../../data/processed/health_report.csv'
-DEFAULT_OUTPUT = '../../data/processed/dam_data_cleaned.csv'
+DEFAULT_INPUT = 'data/processed/dam_data_prepared.csv'
+DEFAULT_HEALTH_REPORT = 'data/processed/health_report.csv'
+DEFAULT_OUTPUT = 'data/processed/dam_data_cleaned.csv'
 
 # Removal criteria (set these in the script or use command-line arguments)
 REMOVE_FLIES = None  # Example: ["6-ch23", "6-ch5", "5-ch7"]

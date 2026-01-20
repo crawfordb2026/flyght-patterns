@@ -1,65 +1,257 @@
 Monitor	Channel	Genotype	Sex	Treatment
-5	ch1	SSS	Female	2mM His
-5	ch2	SSS	Female	8mM His
-5	ch3	SSS	Female	VEH
-5	ch4	Rye	Female	2mM His
-5	ch5	Rye	Female	8mM His
-5	ch6	Rye	Female	VEH
-5	ch7	Fmn	Female	2mM His
-5	ch8	Fmn	Female	8mM His
-5	ch9	Fmn	Female	VEH
-5	ch10	Iso	Female	2mM His
-5	ch11	Iso	Female	8mM His
-5	ch12	Iso	Female	VEH
-5	ch13	SSS	Female	2mM His
-5	ch14	SSS	Female	8mM His
-5	ch15	SSS	Female	VEH
-5	ch16	Rye	Female	2mM His
-5	ch17	Rye	Female	8mM His
-5	ch18	Rye	Female	VEH
-5	ch19	Fmn	Female	2mM His
-5	ch20	Fmn	Female	8mM His
-5	ch21	Fmn	Female	VEH
-5	ch22	Iso	Female	2mM His
-5	ch23	Iso	Female	8mM His
-5	ch24	Iso	Female	VEH
-5	ch25	SSS	Female	2mM His
-5	ch26	SSS	Female	8mM His
-5	ch27	SSS	Female	VEH
-5	ch28	SSS	Female	2mM His
-5	ch29	SSS	Female	8mM His
-5	ch30	SSS	Female	VEH
-5	ch31	NA	NA	NA
-5	ch32	NA	NA	NA
-6	ch1	SSS	Female	2mM His
-6	ch2	SSS	Female	8mM His
-6	ch3	SSS	Female	VEH
-6	ch4	Rye	Female	2mM His
-6	ch5	Rye	Female	8mM His
-6	ch6	Rye	Female	VEH
-6	ch7	Fmn	Female	2mM His
-6	ch8	Fmn	Female	8mM His
-6	ch9	Fmn	Female	VEH
-6	ch10	Iso	Female	2mM His
-6	ch11	Iso	Female	8mM His
-6	ch12	Iso	Female	VEH
-6	ch13	SSS	Female	2mM His
-6	ch14	SSS	Female	8mM His
-6	ch15	SSS	Female	VEH
-6	ch16	Rye	Female	2mM His
-6	ch17	Rye	Female	8mM His
-6	ch18	Rye	Female	VEH
-6	ch19	Fmn	Female	2mM His
-6	ch20	Fmn	Female	8mM His
-6	ch21	Fmn	Female	VEH
-6	ch22	Iso	Female	2mM His
-6	ch23	Iso	Female	8mM His
-6	ch24	Iso	Female	VEH
-6	ch25	SSS	Female	2mM His
-6	ch26	SSS	Female	8mM His
-6	ch27	SSS	Female	VEH
-6	ch28	SSS	Female	2mM His
-6	ch29	SSS	Female	8mM His
-6	ch30	SSS	Female	VEH
-6	ch31	NA	NA	NA
-6	ch32	NA	NA	NA
+51  ch1 Iso Female VEH 
+51  ch2 Iso Female 2mM Arg
+51  ch3 Iso Female 8mM Arg  
+51  ch4 Fmn Female VEH
+51  ch5 Fmn Female 2mM Arg
+51  ch6 Fmn Female 8mM Arg  
+51  ch7 Rye Female VEH
+51  ch8 Rye Female 2mM Arg 
+51  ch9 Rye Female 8mM Arg
+51  ch10 WakeD2 Female VEH
+51  ch11 WakeD2 Female 2mM Arg
+51  ch12 WakeD2 Female 8mM Arg 
+51  ch13 SSS Female VEH
+51  ch14 SSS Female 8mM Arg
+51  ch15 Iso Female VEH
+51  ch16 Iso Female 2mM Arg
+51  ch17 Iso Female 8mM Arg
+51  ch18 Fmn Female VEH
+51  ch19 Fmn Female 2mM Arg
+51  ch20 Fmn Female 8mM Arg
+51  ch21 Rye Female VEH
+51  ch22 Rye Female 2mM Arg
+51  ch23 Rye Female 8mM Arg 
+51  ch24 WakeD2 Female VEH
+51  ch25 WakeD2 Female 2mM Arg
+51  ch26 WakeD2 Female 8mM Arg
+51  ch27 Iso Female VEH 
+51  ch28 Iso Female 2mM Arg
+51  ch29 Iso Female 8mM Arg
+51  ch30 Fmn Female VEH
+51  ch31 Fmn Female 2mM Arg
+51  ch32 Fmn Female 8mM Arg
+52  ch1 Iso Female VEH 
+52  ch2 Iso Female 2mM Arg
+52  ch3 Iso Female 8mM Arg  
+52  ch4 Fmn Female VEH
+52  ch5 Fmn Female 2mM Arg
+52  ch6 Fmn Female 8mM Arg  
+52  ch7 Rye Female VEH
+52  ch8 Rye Female 2mM Arg 
+52  ch9 Rye Female 8mM Arg
+52  ch10 WakeD2 Female VEH
+52  ch11 WakeD2 Female 2mM Arg
+52  ch12 WakeD2 Female 8mM Arg 
+52  ch13 SSS Female VEH
+52  ch14 SSS Female 8mM Arg
+52  ch15 Iso Female VEH
+52  ch16 Iso Female 2mM Arg
+52  ch17 Iso Female 8mM Arg
+52  ch18 Fmn Female VEH
+52  ch19 Fmn Female 2mM Arg
+52  ch20 Fmn Female 8mM Arg
+52  ch21 Rye Female VEH
+52  ch22 Rye Female 2mM Arg
+52  ch23 Rye Female 8mM Arg 
+52  ch24 WakeD2 Female VEH
+52  ch25 WakeD2 Female 2mM Arg
+52  ch26 WakeD2 Female 8mM Arg
+52  ch27 Iso Female VEH 
+52  ch28 Iso Female 2mM Arg
+52  ch29 Iso Female 8mM Arg
+52  ch30 Fmn Female VEH
+52  ch31 Fmn Female 2mM Arg
+52  ch32 Fmn Female 8mM Arg
+53  ch1 Iso Female VEH 
+53  ch2 Iso Female 2mM Arg
+53  ch3 Iso Female 8mM Arg  
+53  ch4 Fmn Female VEH
+53  ch5 Fmn Female 2mM Arg
+53  ch6 Fmn Female 8mM Arg  
+53  ch7 Rye Female VEH
+53  ch8 Rye Female 2mM Arg 
+53  ch9 Rye Female 8mM Arg
+53  ch10 WakeD2 Female VEH
+53  ch11 WakeD2 Female 2mM Arg
+53  ch12 WakeD2 Female 8mM Arg 
+53  ch13 SSS Female VEH
+53  ch14 SSS Female 8mM Arg
+53  ch15 Iso Female VEH
+53  ch16 Iso Female 2mM Arg
+53  ch17 Iso Female 8mM Arg
+53  ch18 Fmn Female VEH
+53  ch19 Fmn Female 2mM Arg
+53  ch20 Fmn Female 8mM Arg
+53  ch21 Rye Female VEH
+53  ch22 Rye Female 2mM Arg
+53  ch23 Rye Female 8mM Arg 
+53  ch24 WakeD2 Female VEH
+53  ch25 WakeD2 Female 2mM Arg
+53  ch26 WakeD2 Female 8mM Arg
+53  ch27 Rye Female VEH
+53  ch28 Rye Female 2mM Arg
+53  ch29 Rye Female 8mM Arg
+53  ch30 WakeD2 Female VEH
+53  ch31 WakeD2 Female 2mM Arg
+53  ch32 WakeD2 Female 8mM Arg
+54  ch1 Iso Female VEH 
+54  ch2 Iso Female 2mM Arg
+54  ch3 Iso Female 8mM Arg  
+54  ch4 Fmn Female VEH
+54  ch5 Fmn Female 2mM Arg
+54  ch6 Fmn Female 8mM Arg  
+54  ch7 Rye Female VEH
+54  ch8 Rye Female 2mM Arg 
+54  ch9 Rye Female 8mM Arg
+54  ch10 WakeD2 Female VEH
+54  ch11 WakeD2 Female 2mM Arg
+54  ch12 WakeD2 Female 8mM Arg 
+54  ch13 SSS Female VEH
+54  ch14 SSS Female 8mM Arg
+54  ch15 Iso Female VEH
+54  ch16 Iso Female 2mM Arg
+54  ch17 Iso Female 8mM Arg
+54  ch18 Fmn Female VEH
+54  ch19 Fmn Female 2mM Arg
+54  ch20 Fmn Female 8mM Arg
+54  ch21 Rye Female VEH
+54  ch22 Rye Female 2mM Arg
+54  ch23 Rye Female 8mM Arg 
+54  ch24 WakeD2 Female VEH
+54  ch25 WakeD2 Female 2mM Arg
+54  ch26 WakeD2 Female 8mM Arg
+54  ch27 Rye Female VEH
+54  ch28 Rye Female 2mM Arg
+54  ch29 Rye Female 8mM Arg
+54  ch30 WakeD2 Female VEH
+54  ch31 WakeD2 Female 2mM Arg
+54  ch32 WakeD2 Female 8mM Arg
+55  ch1 Iso Male VEH 
+55  ch2 Iso Male 2mM Arg
+55  ch3 Iso Male 8mM Arg  
+55  ch4 Fmn Male VEH
+55  ch5 Fmn Male 2mM Arg
+55  ch6 Fmn Male 8mM Arg  
+55  ch7 Rye Male VEH
+55  ch8 Rye Male 2mM Arg 
+55  ch9 Rye Male 8mM Arg
+55  ch10 WakeD2 Male VEH
+55  ch11 WakeD2 Male 2mM Arg
+55  ch12 WakeD2 Male 8mM Arg 
+55  ch13 SSS Male VEH
+55  ch14 SSS Male 8mM Arg
+55  ch15 Iso Male VEH
+55  ch16 Iso Male 2mM Arg
+55  ch17 Iso Male 8mM Arg
+55  ch18 Fmn Male VEH
+55  ch19 Fmn Male 2mM Arg
+55  ch20 Fmn Male 8mM Arg
+55  ch21 Rye Male VEH
+55  ch22 Rye Male 2mM Arg
+55  ch23 Rye Male 8mM Arg 
+55  ch24 WakeD2 Male VEH
+55  ch25 WakeD2 Male 2mM Arg
+55  ch26 WakeD2 Male 8mM Arg
+55  ch27 Iso Male VEH 
+55  ch28 Iso Male 2mM Arg
+55  ch29 Iso Male 8mM Arg
+55  ch30 Fmn Male VEH
+55  ch31 Fmn Male 2mM Arg
+55  ch32 Fmn Male 8mM Arg
+56  ch1 Iso Male VEH 
+56  ch2 Iso Male 2mM Arg
+56  ch3 Iso Male 8mM Arg  
+56  ch4 Fmn Male VEH
+56  ch5 Fmn Male 2mM Arg
+56  ch6 Fmn Male 8mM Arg  
+56  ch7 Rye Male VEH
+56  ch8 Rye Male 2mM Arg 
+56  ch9 Rye Male 8mM Arg
+56  ch10 WakeD2 Male VEH
+56  ch11 WakeD2 Male 2mM Arg
+56  ch12 WakeD2 Male 8mM Arg 
+56  ch13 SSS Male VEH
+56  ch14 SSS Male 8mM Arg
+56  ch15 Iso Male VEH
+56  ch16 Iso Male 2mM Arg
+56  ch17 Iso Male 8mM Arg
+56  ch18 Fmn Male VEH
+56  ch19 Fmn Male 2mM Arg
+56  ch20 Fmn Male 8mM Arg
+56  ch21 Rye Male VEH
+56  ch22 Rye Male 2mM Arg
+56  ch23 Rye Male 8mM Arg 
+56  ch24 WakeD2 Male VEH
+56  ch25 WakeD2 Male 2mM Arg
+56  ch26 WakeD2 Male 8mM Arg
+56  ch27 Iso Male VEH 
+56  ch28 Iso Male 2mM Arg
+56  ch29 Iso Male 8mM Arg
+56  ch30 Fmn Male VEH
+56  ch31 Fmn Male 2mM Arg
+56  ch32 Fmn Male 8mM Arg
+57  ch1 Iso Male VEH 
+57  ch2 Iso Male 2mM Arg
+57  ch3 Iso Male 8mM Arg  
+57  ch4 Fmn Male VEH
+57  ch5 Fmn Male 2mM Arg
+57  ch6 Fmn Male 8mM Arg  
+57  ch7 Rye Male VEH
+57  ch8 Rye Male 2mM Arg 
+57  ch9 Rye Male 8mM Arg
+57  ch10 WakeD2 Male VEH
+57  ch11 WakeD2 Male 2mM Arg
+57  ch12 WakeD2 Male 8mM Arg 
+57  ch13 SSS Male VEH
+57  ch14 SSS Male 8mM Arg
+57  ch15 Iso Male VEH
+57  ch16 Iso Male 2mM Arg
+57  ch17 Iso Male 8mM Arg
+57  ch18 Fmn Male VEH
+57  ch19 Fmn Male 2mM Arg
+57  ch20 Fmn Male 8mM Arg
+57  ch21 Rye Male VEH
+57  ch22 Rye Male 2mM Arg
+57  ch23 Rye Male 8mM Arg 
+57  ch24 WakeD2 Male VEH
+57  ch25 WakeD2 Male 2mM Arg
+57  ch26 WakeD2 Male 8mM Arg
+57  ch27 Rye Male VEH
+57  ch28 Rye Male 2mM Arg
+57  ch29 Rye Male 8mM Arg
+57  ch30 WakeD2 Male VEH
+57  ch31 WakeD2 Male 2mM Arg
+57  ch32 WakeD2 Male 8mM Arg
+58  ch1 Iso Male VEH 
+58  ch2 Iso Male 2mM Arg
+58  ch3 Iso Male 8mM Arg  
+58  ch4 Fmn Male VEH
+58  ch5 Fmn Male 2mM Arg
+58  ch6 Fmn Male 8mM Arg  
+58  ch7 Rye Male VEH
+58  ch8 Rye Male 2mM Arg 
+58  ch9 Rye Male 8mM Arg
+58  ch10 WakeD2 Male VEH
+58  ch11 WakeD2 Male 2mM Arg
+58  ch12 WakeD2 Male 8mM Arg 
+58  ch13 SSS Male VEH
+58  ch14 SSS Male 8mM Arg
+58  ch15 Iso Male VEH
+58  ch16 Iso Male 2mM Arg
+58  ch17 Iso Male 8mM Arg
+58  ch18 Fmn Male VEH
+58  ch19 Fmn Male 2mM Arg
+58  ch20 Fmn Male 8mM Arg
+58  ch21 Rye Male VEH
+58  ch22 Rye Male 2mM Arg
+58  ch23 Rye Male 8mM Arg 
+58  ch24 WakeD2 Male VEH
+58  ch25 WakeD2 Male 2mM Arg
+58  ch26 WakeD2 Male 8mM Arg
+58  ch27 Rye Male VEH
+58  ch28 Rye Male 2mM Arg
+58  ch29 Rye Male 8mM Arg
+58  ch30 WakeD2 Male VEH
+58  ch31 WakeD2 Male 2mM Arg
+58  ch32 WakeD2 Male 8mM Arg

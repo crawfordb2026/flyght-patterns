@@ -114,9 +114,9 @@ def remove_flies(
     original_count = len(df)
     
     # Create fly key column
-    df['fly_key'] = df.apply(
-        lambda row: create_fly_key(row['monitor'], row['channel']), axis=1
-    )
+    channel_str = df['channel'].astype(str).str.lower()
+    channel_str = channel_str.str.replace('^ch', '', regex=True)
+    df['fly_key'] = df['monitor'].astype(str) + '-ch' + channel_str
     
     # Normalize metadata to lowercase for comparison
     if 'genotype' in df.columns:
@@ -148,9 +148,9 @@ def remove_flies(
         
         if len(flies_to_remove_by_status) > 0:
             # Create fly keys
-            flies_to_remove_by_status['fly_key'] = flies_to_remove_by_status.apply(
-                lambda row: create_fly_key(row['monitor'], row['channel']), axis=1
-            )
+            channel_str = flies_to_remove_by_status['channel'].astype(str).str.lower()
+            channel_str = channel_str.str.replace('^ch', '', regex=True)
+            flies_to_remove_by_status['fly_key'] = flies_to_remove_by_status['monitor'].astype(str) + '-ch' + channel_str
             fly_keys_to_remove = flies_to_remove_by_status['fly_key'].str.lower().tolist()
             
             df = df[~df['fly_key'].str.lower().isin(fly_keys_to_remove)].copy()

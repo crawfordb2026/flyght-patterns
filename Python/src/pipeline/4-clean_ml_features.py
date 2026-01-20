@@ -37,9 +37,9 @@ import seaborn as sns
 # ============================================================
 
 # Default file paths
-DEFAULT_INPUT = '../../data/processed/ML_features.csv'
-DEFAULT_OUTPUT_CLEAN = '../../data/processed/ML_features_clean.csv'
-DEFAULT_OUTPUT_Z = '../../data/processed/ML_features_Z.csv'
+DEFAULT_INPUT = 'data/processed/ML_features.csv'
+DEFAULT_OUTPUT_CLEAN = 'data/processed/ML_features_clean.csv'
+DEFAULT_OUTPUT_Z = 'data/processed/ML_features_Z.csv'
 
 # IQR outlier detection settings
 DEFAULT_IQR_MULTIPLIER = 1.5  # Standard IQR multiplier for outlier detection

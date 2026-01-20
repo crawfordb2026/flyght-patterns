@@ -91,7 +91,7 @@ def prepare_rhythm_data(dam_clean, exclude_days):
     df = df.dropna(subset=['genotype', 'sex', 'treatment', 'zt', 'exp_day'])
     
     # Create fly_id (format: M{monitor}_Ch{channel:02d}
-    df['fly_id'] = df.apply(lambda row: f"M{row['monitor']}_Ch{row['channel']:02d}", axis=1)
+    df['fly_id'] = 'M' + df['monitor'].astype(str) + '_Ch' + df['channel'].astype(str).str.zfill(2)
     
     # Convert zt to numeric
     df['zt'] = pd.to_numeric(df['zt'], errors='coerce')
@@ -268,7 +268,7 @@ def prepare_sleep_data(dam_clean, exclude_days):
         df = df[~df['exp_day'].isin(exclude_days)].copy()
     
     # Create fly_id (format: M{monitor}_Ch{channel:02d} ) and zt_num
-    df['fly_id'] = df.apply(lambda row: f"M{row['monitor']}_Ch{row['channel']:02d}", axis=1)
+    df['fly_id'] = 'M' + df['monitor'].astype(str) + '_Ch' + df['channel'].astype(str).str.zfill(2)
     df['zt_num'] = pd.to_numeric(df['zt'], errors='coerce')
     
     # Rename value to movement
@@ -620,10 +620,10 @@ def create_feature_table(
                         feature_cols = [col for col in column_names if col not in ['fly_id', 'experiment_id']]
                         
                         # Prepare tuples (all columns in order)
-                        features_tuples = [
-                            tuple(row[col] for col in column_names)
-                            for _, row in ML_features_db.iterrows()
-                        ]
+                        # Convert each column to list 
+                        column_lists = [ML_features_db[col].values.tolist() for col in column_names]
+                        # Zip columns together to create tuples
+                        features_tuples = list(zip(*column_lists))
                         
                         # Build UPSERT query (INSERT ... ON CONFLICT DO UPDATE)
                         insert_cols = ', '.join(column_names)

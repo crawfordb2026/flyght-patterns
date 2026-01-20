@@ -513,7 +513,7 @@ def run_pipeline(
     
     # Default file paths
     if dam_files is None:
-        dam_files = ['../../Monitor5.txt', '../../Monitor6.txt']
+        dam_files = ['../../Monitors_raw/Monitor5.txt', '../../Monitors_raw/Monitor6.txt']
     if meta_path is None:
         meta_path = '../../details.txt'
     

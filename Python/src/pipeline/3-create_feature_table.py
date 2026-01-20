@@ -33,8 +33,8 @@ from pathlib import Path
 # ============================================================
 
 # Default file paths
-DEFAULT_INPUT = '../../data/processed/dam_data_cleaned.csv'  # Try cleaned first, fallback to prepared
-DEFAULT_OUTPUT = '../../data/processed/ML_features.csv'
+DEFAULT_INPUT = 'data/processed/dam_data_cleaned.csv'  # Try cleaned first, fallback to prepared
+DEFAULT_OUTPUT = 'data/processed/ML_features.csv'
 
 # Feature extraction settings
 DEFAULT_EXCLUDE_DAYS = [1, 7]

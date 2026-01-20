@@ -1,0 +1,53 @@
+ML FEATURES CLEANING DIAGNOSTICS
+============================================================
+
+Original flies: 236
+Cleaned flies: 210
+Removed: 26
+
+Removed Flies:
+  fly_id genotype    sex treatment  total_sleep_mean  total_bouts_mean  never_slept  zero_sleep_bouts  p_doze_mean
+M51_Ch31      Fmn Female   2mM Arg               0.0               0.0         True              True          0.0
+M54_Ch19      Fmn Female   2mM Arg               0.0               0.0         True              True          0.0
+M51_Ch32      Fmn Female   8mM Arg               0.0               0.0         True              True          0.0
+M52_Ch06      Fmn Female   8mM Arg               0.0               0.0         True              True          0.0
+M52_Ch20      Fmn Female   8mM Arg               0.0               0.0         True              True          0.0
+M53_Ch20      Fmn Female   8mM Arg               0.0               0.0         True              True          0.0
+M54_Ch06      Fmn Female   8mM Arg               0.0               0.0         True              True          0.0
+M51_Ch30      Fmn Female       VEH               0.0               0.0         True              True          0.0
+M53_Ch04      Fmn Female       VEH               0.0               0.0         True              True          0.0
+M54_Ch04      Fmn Female       VEH               0.0               0.0         True              True          0.0
+M51_Ch14      SSS Female   8mM Arg               0.0               0.0         True              True          0.0
+M52_Ch14      SSS Female   8mM Arg               0.0               0.0         True              True          0.0
+M56_Ch14      SSS   Male   8mM Arg               0.0               0.0         True              True          0.0
+
+IQR Outlier Summary:
+genotype    sex treatment  n_total  n_outliers  percent_outliers
+     Fmn Female   2mM Arg        8           1              12.5
+     Fmn Female   8mM Arg        5           1              20.0
+     Fmn Female       VEH        7           0               0.0
+     Fmn   Male   2mM Arg        9           1              11.1
+     Fmn   Male   8mM Arg        9           1              11.1
+     Fmn   Male       VEH       10           0               0.0
+     Iso Female   2mM Arg       10           0               0.0
+     Iso Female   8mM Arg       10           1              10.0
+     Iso Female       VEH       10           0               0.0
+     Iso   Male   2mM Arg       10           2              20.0
+     Iso   Male   8mM Arg       10           0               0.0
+     Iso   Male       VEH       10           0               0.0
+     Rye Female   2mM Arg        6           1              16.7
+     Rye Female   8mM Arg        5           2              40.0
+     Rye Female       VEH        6           0               0.0
+     Rye   Male   2mM Arg       10           0               0.0
+     Rye   Male   8mM Arg       10           0               0.0
+     Rye   Male       VEH       10           0               0.0
+     SSS Female   8mM Arg        1           0               0.0
+     SSS Female       VEH        2           0               0.0
+     SSS   Male   8mM Arg        3           0               0.0
+     SSS   Male       VEH        4           1              25.0
+  WakeD2 Female   2mM Arg        9           0               0.0
+  WakeD2 Female   8mM Arg       10           0               0.0
+  WakeD2 Female       VEH       10           0               0.0
+  WakeD2   Male   2mM Arg       10           2              20.0
+  WakeD2   Male   8mM Arg       10           0               0.0
+  WakeD2   Male       VEH        9           0               0.0
