@@ -7,7 +7,7 @@ It preserves the original tab-separated format and creates a new file with
 a date-stamped filename.
 
 Usage:
-    python 0-filter_dates.py --input Monitor51 --start "06/21/25" --days 5
+    python 0-filter_dates.py --input Monitor51 --load "06/20/25" --days 5 --offset 1
     
 The script will automatically find the monitor file in Monitors_raw folder (e.g., Monitor51.txt).
 Output is saved to Monitors_date_filtered folder.
@@ -21,12 +21,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 
-def parse_start_date(date_str):
+def parse_load_date(date_str):
     """
-    Parse start date from MM/DD/YY format.
+    Parse load date from MM/DD/YY format.
     
     Args:
-        date_str: Date string in format "06/21/25" (MM/DD/YY)
+        date_str: Date string in format "06/20/25" (MM/DD/YY)
         
     Returns:
         datetime object
@@ -35,7 +35,7 @@ def parse_start_date(date_str):
         # Parse MM/DD/YY format
         return pd.to_datetime(date_str, format='%m/%d/%y')
     except ValueError as e:
-        raise ValueError(f"Invalid date format: {date_str}. Expected MM/DD/YY format (e.g., '06/21/25')") from e
+        raise ValueError(f"Invalid date format: {date_str}. Expected MM/DD/YY format (e.g., '06/20/25')") from e
 
 
 def extract_monitor_number(monitor_name_or_path):
@@ -93,14 +93,15 @@ def find_monitor_file(monitor_name):
     )
 
 
-def filter_monitor_file(input_file, start_date_str, num_days, output_file=None, monitor_name=None):
+def filter_monitor_file(input_file, load_date_str, num_days, offset_days, output_file=None, monitor_name=None):
     """
     Filter monitor file by date range.
     
     Args:
         input_file: Path to input monitor file
-        start_date_str: Start date in MM/DD/YY format (e.g., "06/21/25")
-        num_days: Number of days the experiment ran
+        load_date_str: Load date in MM/DD/YY format (e.g., "06/20/25")
+        num_days: Number of days of data to include after offset
+        offset_days: Number of days to wait after load date before starting filter
         output_file: Optional output file path. If None, auto-generates from input filename.
         monitor_name: Original monitor name (e.g., "Monitor51") for output filename generation
         
@@ -115,17 +116,15 @@ def filter_monitor_file(input_file, start_date_str, num_days, output_file=None, 
     if not os.path.exists(input_file):
         raise FileNotFoundError(f"Input file not found: {input_file}")
     
-    # Parse start date
-    start_date = parse_start_date(start_date_str)
-    print(f"\nStart date: {start_date.strftime('%B %d, %Y')} ({start_date_str})")
+    # Parse load date
+    load_date = parse_load_date(load_date_str)
+    print(f"\nLoad date: {load_date.strftime('%B %d, %Y')} ({load_date_str})")
+    print(f"Offset: {offset_days} day(s)")
+    print(f"Days to include: {num_days} day(s)")
     
-    # Calculate end date (start is day 1, so end = start + num_days - 1)
-    end_date = start_date + timedelta(days=num_days - 1)
-    print(f"End date: {end_date.strftime('%B %d, %Y')} (experiment ran for {num_days} days)")
-    
-    # Calculate filter range: [start-1@9am, end+1@9am)
-    filter_start = (start_date - timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
-    filter_end = (end_date + timedelta(days=1)).replace(hour=9, minute=0, second=0, microsecond=0)
+    # Calculate filter range: [load_date + offset @ 9am, load_date + offset + num_days @ 9am)
+    filter_start = (load_date + timedelta(days=offset_days)).replace(hour=9, minute=0, second=0, microsecond=0)
+    filter_end = (load_date + timedelta(days=offset_days + num_days)).replace(hour=9, minute=0, second=0, microsecond=0)
     
     print(f"\nFilter range: [{filter_start.strftime('%Y-%m-%d %H:%M:%S')}, {filter_end.strftime('%Y-%m-%d %H:%M:%S')})")
     
@@ -145,13 +144,10 @@ def filter_monitor_file(input_file, start_date_str, num_days, output_file=None, 
         output_dir.mkdir(exist_ok=True)
         
         # Format dates for filename: Monitor{num}_{MM}_{DD}_{YY}.txt
-        # Uses start-1 day and end day
-        filename_start = (start_date - timedelta(days=1))
-        filename_end = end_date
-        
-        # Format: Monitor51_06_20_25.txt (MM, start-1 day, year)
-        # Example: start="06/21/25", num_days=5 → Monitor51_06_20_25.txt
-        output_filename = f"Monitor{monitor_num}_{filename_start.strftime('%m')}_{filename_start.strftime('%d')}_{filename_start.strftime('%y')}.txt"
+        # Uses load date directly
+        # Format: Monitor51_06_20_25.txt (MM, DD, YY from load date)
+        # Example: load="06/20/25" → Monitor51_06_20_25.txt
+        output_filename = f"Monitor{monitor_num}_{load_date.strftime('%m')}_{load_date.strftime('%d')}_{load_date.strftime('%y')}.txt"
         output_file = str(output_dir / output_filename)
     
     # Read file line by line and copy exact lines that fall within date range
@@ -256,17 +252,19 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python 0-filter_dates.py --input Monitor51 --start "06/21/25" --days 5
-  python 0-filter_dates.py --input Monitor51 --start "06/21/25" --days 5 --output custom_output.txt
+  python 0-filter_dates.py --input Monitor51 --load "06/20/25" --days 5 --offset 1
+  python 0-filter_dates.py --input Monitor51 --load "06/20/25" --days 5 --offset 1 --output custom_output.txt
         """
     )
     
     parser.add_argument('--input', type=str, required=True,
                        help='Monitor filename (e.g., "Monitor51"). Will search in Monitors_raw folder.')
-    parser.add_argument('--start', type=str, required=True,
-                       help='Start date in MM/DD/YY format (e.g., "06/21/25"). This is already adjusted to be one day past the load day.')
+    parser.add_argument('--load', type=str, required=True,
+                       help='Load date in MM/DD/YY format (e.g., "06/20/25"). This date will be used in the output filename.')
     parser.add_argument('--days', type=int, required=True,
-                       help='Number of days the experiment ran (e.g., 5)')
+                       help='Number of days of data to include after the offset (e.g., 5)')
+    parser.add_argument('--offset', type=int, required=True,
+                       help='Number of days to wait after load date before starting filter (e.g., 1 means filter starts 1 day after load date)')
     parser.add_argument('--output', type=str, default=None,
                        help='Output file path (optional, auto-generated and saved to Monitors_date_filtered folder)')
     
@@ -279,8 +277,9 @@ Examples:
         
         output_file = filter_monitor_file(
             input_file=input_file,
-            start_date_str=args.start,
+            load_date_str=args.load,
             num_days=args.days,
+            offset_days=args.offset,
             output_file=args.output,
             monitor_name=args.input  # Pass original monitor name for output filename
         )
