@@ -7,8 +7,6 @@ This script combines the functionality of:
 - generate_health_report.py (health classification)
 - remove_flies.py (fly removal)
 
-Matches the workflow of pipeline.r in R.
-
 Usage:
     python pipeline.py [options]
     
@@ -183,7 +181,7 @@ def apply_date_filter(df, apply_filter, exp_start, exp_end):
 
 def calculate_exp_day_global(df, exp_start):
     """
-    Calculate Exp_Day using global experiment start date (matching R behavior).
+    Calculate Exp_Day using global experiment start date.
     
     Args:
         df: DataFrame with Date column

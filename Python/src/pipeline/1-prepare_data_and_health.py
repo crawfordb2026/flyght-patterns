@@ -320,7 +320,7 @@ def apply_date_filter(df, apply_filter, exp_start, exp_end):
 
 def calculate_exp_day_global(df, exp_start):
     """
-    Calculate Exp_Day using global experiment start date (matching R behavior).
+    Calculate Exp_Day using global experiment start date.
     
     Args:
         df: DataFrame with Date column

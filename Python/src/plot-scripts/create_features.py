@@ -2,7 +2,6 @@
 """
 Drosophila Sleep Metrics (Individual-Fly Analysis)
 
-Python equivalent of features.r
 Works with 15-beam DAM data structured like dam_sleep
 
 Columns expected: Monitor, Channel, datetime, Reading, Value, Genotype, Sex, Treatment

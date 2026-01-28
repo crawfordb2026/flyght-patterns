@@ -2,7 +2,6 @@
 """
 Drosophila Circadian Rhythm Features (Per-Fly Analysis)
 
-Python equivalent of cosinor.r
 Computes circadian rhythm parameters (Mesor, Amplitude, Phase) for each fly using cosinor regression.
 
 Columns expected: Monitor, Channel, datetime, Reading, Value, Genotype, Sex, Treatment

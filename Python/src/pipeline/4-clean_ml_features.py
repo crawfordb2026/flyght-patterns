@@ -17,8 +17,6 @@ Output: ML_features_clean.csv, ML_features_Z.csv
 
 This step prepares the feature table for machine learning by removing
 problematic flies and normalizing features.
-
-Matches the functionality of MLcleaner.r in R.
 """
 
 import pandas as pd
@@ -241,7 +239,7 @@ def create_z_scored_features(ML_features):
         # Z-score: (x - mean) / std
         df_z[z_col] = (df[col] - df[col].mean()) / df[col].std()
     
-    # Remove n_days_Z if it exists (as in R script)
+    # Remove n_days_Z if it exists
     if 'n_days_Z' in df_z.columns:
         df_z = df_z.drop(columns=['n_days_Z'])
     

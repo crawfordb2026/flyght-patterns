@@ -2,7 +2,6 @@
 """
 Drosophila Circadian Rhythm Analysis (Group-Level)
 
-Python equivalent of circasingle.r
 Computes circadian rhythm parameters (Mesor, Amplitude, Acrophase) for each experimental group
 by fitting cosinor models to group-averaged activity data.
 
@@ -197,7 +196,6 @@ def run_circasingle_group(group_data: pd.DataFrame, period: int = 24) -> Optiona
     """
     Fit cosinor model to a group's mean activity data.
     
-    Equivalent to R's circa_single() function.
     Model: mean_total_MT = Mesor + A*cos(2π*ZT/period) + B*sin(2π*ZT/period)
     
     Args:

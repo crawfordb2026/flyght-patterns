@@ -4,7 +4,7 @@ PCA Analysis Pipeline
 =====================
 VEH-only feature analysis: PCA, Genotype Comparisons, Signature Heatmaps
 
-This script replicates the functionality of PCA.r:
+This script performs:
 1. PCA on z-scored features (vehicle treatment only)
 2. Genotype comparisons (ANOVA/Kruskal-Wallis with automatic selection)
 3. Genotype signature heatmaps (mean z-scores)

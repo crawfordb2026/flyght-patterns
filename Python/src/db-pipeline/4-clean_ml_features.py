@@ -17,8 +17,6 @@ Output: Saved to database (features and features_z tables)
 
 This step prepares the feature table for machine learning by removing
 problematic flies and normalizing features.
-
-Matches the functionality of MLcleaner.r in R.
 """
 
 import pandas as pd

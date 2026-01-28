@@ -285,8 +285,6 @@ def prepare_sleep_data(dam_clean, exclude_days):
 def compute_sleep_features_daily(df, bin_length_min, sleep_threshold_min):
     """
     Compute daily sleep features for one fly-day.
-    
-    Matches feature-table.r compute_sleep_features function.
     """
     df = df.copy().reset_index(drop=True)
     

@@ -4,7 +4,7 @@ UMAP + DBSCAN Cluster Analysis Pipeline
 ========================================
 VEH-only unsupervised clustering and pattern discovery
 
-This script replicates the functionality of UmapDBscan.r:
+This script performs:
 1. UMAP dimensionality reduction on top 10 features
 2. DBSCAN clustering with automated eps detection
 3. Cluster × genotype enrichment analysis
@@ -54,7 +54,7 @@ sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (12, 8)
 plt.rcParams['font.size'] = 10
 
-# Top 10 features for UMAP (matching R script)
+# Top 10 features for UMAP
 # Note: Using lowercase _z suffix to match database convention
 TOP_FEATURES = [
     "night_sleep_mean_z",
@@ -314,7 +314,7 @@ def plot_umap_density_contours(umap_df, output_dir):
     
     fig, ax = plt.subplots(figsize=(12, 10))
     
-    # Custom colors matching R script
+    # Custom colors for genotypes
     genotype_colors = {
         'Iso': '#6CC24A',
         'Rye': '#00B5D8',

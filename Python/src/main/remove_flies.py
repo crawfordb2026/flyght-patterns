@@ -7,8 +7,6 @@ This script removes flies from the dataset based on:
 2. Specific days for certain flies
 3. Metadata criteria (genotype, sex, treatment)
 
-Matches the functionality of the R script remove_specific.r.
-
 Usage:
     python remove_flies.py [input_file] [output_file] [options]
     

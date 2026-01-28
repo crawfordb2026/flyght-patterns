@@ -711,6 +711,10 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                         flies['treatment'].astype(str).values.tolist()
                     ))
                     
+                    # Get count before insert
+                    cur.execute("SELECT COUNT(*) FROM flies WHERE experiment_id = %s", (experiment_id,))
+                    count_before = cur.fetchone()[0]
+                    
                     # Single bulk insert operation (much faster than row-by-row)
                     execute_values(
                         cur,
@@ -722,9 +726,13 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                         page_size=1000  # Process in pages of 1000 for very large datasets
                     )
                     
+                    # Get count after insert to determine actual rows inserted
+                    cur.execute("SELECT COUNT(*) FROM flies WHERE experiment_id = %s", (experiment_id,))
+                    count_after = cur.fetchone()[0]
+                    
                     # Count inserted vs skipped
                     total_rows = len(flies_tuples)
-                    inserted_count = cur.rowcount  # Rows actually inserted
+                    inserted_count = count_after - count_before  # Actual rows inserted
                     skipped_count = total_rows - inserted_count
                     
                     conn.commit()
@@ -822,6 +830,10 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                             health_df['status'].astype(str).values.tolist()
                         ))
                         
+                        # Get count before insert
+                        cur.execute("SELECT COUNT(*) FROM health_reports WHERE experiment_id = %s", (experiment_id,))
+                        count_before = cur.fetchone()[0]
+                        
                         # Single bulk insert operation
                         execute_values(
                             cur,
@@ -833,7 +845,11 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                             page_size=1000
                         )
                         
-                        inserted_count = cur.rowcount
+                        # Get count after insert to determine actual rows inserted
+                        cur.execute("SELECT COUNT(*) FROM health_reports WHERE experiment_id = %s", (experiment_id,))
+                        count_after = cur.fetchone()[0]
+                        
+                        inserted_count = count_after - count_before
                         conn.commit()
                         print(f"  Saved {inserted_count} health reports to database")
                         

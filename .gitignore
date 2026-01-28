@@ -10,6 +10,9 @@ SQL_QUERIES.md
 Python/Monitors_raw/
 Python/Monitors_date_filtered/
 
+#ignore results directory
+Python/src/db-pipeline/analysis/analysis_results/
+
 # Ignore Python cache files
 __pycache__/
 *.pyc

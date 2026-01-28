@@ -2,11 +2,13 @@
 
 ## List All Experiments
 
+
+# Connect to your database (it will prompt for password)
+psql -U postgres -d fly_ml_db
+
 Basic query:
 ```sql
-SELECT experiment_id, name, start_date, end_date, created_at
-FROM experiments
-ORDER BY created_at DESC;
+SELECT experiment_id, name, start_date, end_date, created_at FROM experiments ORDER BY created_at DESC;
 ```
 
 With more details:

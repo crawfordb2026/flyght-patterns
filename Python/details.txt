@@ -1,4 +1,4 @@
-Monitor	Channel	Genotype	Sex	Treatment
+Monitor	Channel	Genotype Sex Treatment
 51_06_20_25  ch1 Iso Female VEH 
 51_06_20_25  ch2 Iso Female 2mM Arg
 51_06_20_25  ch3 Iso Female 8mM Arg  
@@ -255,3 +255,1155 @@ Monitor	Channel	Genotype	Sex	Treatment
 58_06_20_25  ch30 WakeD2 Male VEH
 58_06_20_25  ch31 WakeD2 Male 2mM Arg
 58_06_20_25  ch32 WakeD2 Male 8mM Arg
+5_09_25_25 ch1 SSS Female 2mM His
+5_09_25_25 ch2 SSS Female 8mM His
+5_09_25_25 ch3 SSS Female VEH
+5_09_25_25 ch4 Rye Female 2mM His
+5_09_25_25 ch5 Rye Female 8mM His
+5_09_25_25 ch6 Rye Female VEH
+5_09_25_25 ch7 Fmn Female 2mM His
+5_09_25_25 ch8 Fmn Female 8mM His
+5_09_25_25 ch9 Fmn Female VEH
+5_09_25_25 ch10 Iso Female 2mM His
+5_09_25_25 ch11 Iso Female 8mM His
+5_09_25_25 ch12 Iso Female VEH
+5_09_25_25 ch13 SSS Female 2mM His
+5_09_25_25 ch14 SSS Female 8mM His
+5_09_25_25 ch15 SSS Female VEH
+5_09_25_25 ch16 Rye Female 2mM His
+5_09_25_25 ch17 Rye Female 8mM His
+5_09_25_25 ch18 Rye Female VEH
+5_09_25_25 ch19 Fmn Female 2mM His
+5_09_25_25 ch20 Fmn Female 8mM His
+5_09_25_25 ch21 Fmn Female VEH
+5_09_25_25 ch22 Iso Female 2mM His
+5_09_25_25 ch23 Iso Female 8mM His
+5_09_25_25 ch24 Iso Female VEH
+5_09_25_25 ch25 SSS Female 2mM His
+5_09_25_25 ch26 SSS Female 8mM His
+5_09_25_25 ch27 SSS Female VEH
+5_09_25_25 ch28 SSS Female 2mM His
+5_09_25_25 ch29 SSS Female 8mM His
+5_09_25_25 ch30 SSS Female VEH
+5_09_25_25 ch31 na na na
+5_09_25_25 ch32 na na na
+6_09_25_25 ch1 SSS Female 2mM His
+6_09_25_25 ch2 SSS Female 8mM His
+6_09_25_25 ch3 SSS Female VEH
+6_09_25_25 ch4 Rye Female 2mM His
+6_09_25_25 ch5 Rye Female 8mM His
+6_09_25_25 ch6 Rye Female VEH
+6_09_25_25 ch7 Fmn Female 2mM His
+6_09_25_25 ch8 Fmn Female 8mM His
+6_09_25_25 ch9 Fmn Female VEH
+6_09_25_25 ch10 Iso Female 2mM His
+6_09_25_25 ch11 Iso Female 8mM His
+6_09_25_25 ch12 Iso Female VEH
+6_09_25_25 ch13 SSS Female 2mM His
+6_09_25_25 ch14 SSS Female 8mM His
+6_09_25_25 ch15 SSS Female VEH
+6_09_25_25 ch16 Rye Female 2mM His
+6_09_25_25 ch17 Rye Female 8mM His
+6_09_25_25 ch18 Rye Female VEH
+6_09_25_25 ch19 Fmn Female 2mM His
+6_09_25_25 ch20 Fmn Female 8mM His
+6_09_25_25 ch21 Fmn Female VEH
+6_09_25_25 ch22 Iso Female 2mM His
+6_09_25_25 ch23 Iso Female 8mM His
+6_09_25_25 ch24 Iso Female VEH
+6_09_25_25 ch25 SSS Female 2mM His
+6_09_25_25 ch26 SSS Female 8mM His
+6_09_25_25 ch27 SSS Female VEH
+6_09_25_25 ch28 SSS Female 2mM His
+6_09_25_25 ch29 SSS Female 8mM His
+6_09_25_25 ch30 SSS Female VEH
+6_09_25_25 ch31 na na na
+6_09_25_25 ch32 na na na
+7_09_25_25 ch1 SSS Female 2mM His
+7_09_25_25 ch2 SSS Female 8mM His
+7_09_25_25 ch3 SSS Female VEH
+7_09_25_25 ch4 Rye Female 2mM His
+7_09_25_25 ch5 Rye Female 8mM His
+7_09_25_25 ch6 Rye Female VEH
+7_09_25_25 ch7 Fmn Female 2mM His
+7_09_25_25 ch8 Fmn Female 8mM His
+7_09_25_25 ch9 Fmn Female VEH
+7_09_25_25 ch10 Iso Female 2mM His
+7_09_25_25 ch11 Iso Female 8mM His
+7_09_25_25 ch12 Iso Female VEH
+7_09_25_25 ch13 SSS Female 2mM His
+7_09_25_25 ch14 SSS Female 8mM His
+7_09_25_25 ch15 SSS Female VEH
+7_09_25_25 ch16 Rye Female 2mM His
+7_09_25_25 ch17 Rye Female 8mM His
+7_09_25_25 ch18 Rye Female VEH
+7_09_25_25 ch19 Fmn Female 2mM His
+7_09_25_25 ch20 Fmn Female 8mM His
+7_09_25_25 ch21 Fmn Female VEH
+7_09_25_25 ch22 Iso Female 2mM His
+7_09_25_25 ch23 Iso Female 8mM His
+7_09_25_25 ch24 Iso Female VEH
+7_09_25_25 ch25 SSS Female 2mM His
+7_09_25_25 ch26 SSS Female 8mM His
+7_09_25_25 ch27 SSS Female VEH
+7_09_25_25 ch28 SSS Female 2mM His
+7_09_25_25 ch29 SSS Female 8mM His
+7_09_25_25 ch30 SSS Female VEH
+7_09_25_25 ch31 na na na
+7_09_25_25 ch32 na na na
+8_09_25_25 ch1 SSS Female 2mM His
+8_09_25_25 ch2 SSS Female 8mM His
+8_09_25_25 ch3 SSS Female VEH
+8_09_25_25 ch4 Rye Female 2mM His
+8_09_25_25 ch5 Rye Female 8mM His
+8_09_25_25 ch6 Rye Female VEH
+8_09_25_25 ch7 Fmn Female 2mM His
+8_09_25_25 ch8 Fmn Female 8mM His
+8_09_25_25 ch9 Fmn Female VEH
+8_09_25_25 ch10 Iso Female 2mM His
+8_09_25_25 ch11 Iso Female 8mM His
+8_09_25_25 ch12 Iso Female VEH
+8_09_25_25 ch13 SSS Female 2mM His
+8_09_25_25 ch14 SSS Female 8mM His
+8_09_25_25 ch15 SSS Female VEH
+8_09_25_25 ch16 Rye Female 2mM His
+8_09_25_25 ch17 Rye Female 8mM His
+8_09_25_25 ch18 Rye Female VEH
+8_09_25_25 ch19 Fmn Female 2mM His
+8_09_25_25 ch20 Fmn Female 8mM His
+8_09_25_25 ch21 Fmn Female VEH
+8_09_25_25 ch22 Iso Female 2mM His
+8_09_25_25 ch23 Iso Female 8mM His
+8_09_25_25 ch24 Iso Female VEH
+8_09_25_25 ch25 SSS Female 2mM His
+8_09_25_25 ch26 SSS Female 8mM His
+8_09_25_25 ch27 SSS Female VEH
+8_09_25_25 ch28 SSS Female 2mM His
+8_09_25_25 ch29 SSS Female 8mM His
+8_09_25_25 ch30 SSS Female VEH
+8_09_25_25 ch31 na na na
+8_09_25_25 ch32 na na na
+9_09_25_25 ch1 SSS Male 2mM His
+9_09_25_25 ch2 SSS Male 8mM His
+9_09_25_25 ch3 SSS Male VEH
+9_09_25_25 ch4 Rye Male 2mM His
+9_09_25_25 ch5 Rye Male 8mM His
+9_09_25_25 ch6 Rye Male VEH
+9_09_25_25 ch7 Fmn Male 2mM His
+9_09_25_25 ch8 Fmn Male 8mM His
+9_09_25_25 ch9 Fmn Male VEH
+9_09_25_25 ch10 Iso Male 2mM His
+9_09_25_25 ch11 Iso Male 8mM His
+9_09_25_25 ch12 Iso Male VEH
+9_09_25_25 ch13 SSS Male 2mM His
+9_09_25_25 ch14 SSS Male 8mM His
+9_09_25_25 ch15 SSS Male VEH
+9_09_25_25 ch16 Rye Male 2mM His
+9_09_25_25 ch17 Rye Male 8mM His
+9_09_25_25 ch18 Rye Male VEH
+9_09_25_25 ch19 Fmn Male 2mM His
+9_09_25_25 ch20 Fmn Male 8mM His
+9_09_25_25 ch21 Fmn Male VEH
+9_09_25_25 ch22 Iso Male 2mM His
+9_09_25_25 ch23 Iso Male 8mM His
+9_09_25_25 ch24 Iso Male VEH
+9_09_25_25 ch25 SSS Male 2mM His
+9_09_25_25 ch26 SSS Male 8mM His
+9_09_25_25 ch27 SSS Male VEH
+9_09_25_25 ch28 SSS Male 2mM His
+9_09_25_25 ch29 SSS Male 8mM His
+9_09_25_25 ch30 SSS Male VEH
+9_09_25_25 ch31 na na na
+9_09_25_25 ch32 na na na
+11_09_25_25 ch1 SSS Male 2mM His
+11_09_25_25 ch2 SSS Male 8mM His
+11_09_25_25 ch3 SSS Male VEH
+11_09_25_25 ch4 Rye Male 2mM His
+11_09_25_25 ch5 Rye Male 8mM His
+11_09_25_25 ch6 Rye Male VEH
+11_09_25_25 ch7 Fmn Male 2mM His
+11_09_25_25 ch8 Fmn Male 8mM His
+11_09_25_25 ch9 Fmn Male VEH
+11_09_25_25 ch10 Iso Male 2mM His
+11_09_25_25 ch11 Iso Male 8mM His
+11_09_25_25 ch12 Iso Male VEH
+11_09_25_25 ch13 SSS Male 2mM His
+11_09_25_25 ch14 SSS Male 8mM His
+11_09_25_25 ch15 SSS Male VEH
+11_09_25_25 ch16 Rye Male 2mM His
+11_09_25_25 ch17 Rye Male 8mM His
+11_09_25_25 ch18 Rye Male VEH
+11_09_25_25 ch19 Fmn Male 2mM His
+11_09_25_25 ch20 Fmn Male 8mM His
+11_09_25_25 ch21 Fmn Male VEH
+11_09_25_25 ch22 Iso Male 2mM His
+11_09_25_25 ch23 Iso Male 8mM His
+11_09_25_25 ch24 Iso Male VEH
+11_09_25_25 ch25 SSS Male 2mM His
+11_09_25_25 ch26 SSS Male 8mM His
+11_09_25_25 ch27 SSS Male VEH
+11_09_25_25 ch28 SSS Male 2mM His
+11_09_25_25 ch29 SSS Male 8mM His
+11_09_25_25 ch30 SSS Male VEH
+11_09_25_25 ch31 na na na
+11_09_25_25 ch32 na na na
+12_09_25_25 ch1 SSS Male 2mM His
+12_09_25_25 ch2 SSS Male 8mM His
+12_09_25_25 ch3 SSS Male VEH
+12_09_25_25 ch4 Rye Male 2mM His
+12_09_25_25 ch5 Rye Male 8mM His
+12_09_25_25 ch6 Rye Male VEH
+12_09_25_25 ch7 Fmn Male 2mM His
+12_09_25_25 ch8 Fmn Male 8mM His
+12_09_25_25 ch9 Fmn Male VEH
+12_09_25_25 ch10 Iso Male 2mM His
+12_09_25_25 ch11 Iso Male 8mM His
+12_09_25_25 ch12 Iso Male VEH
+12_09_25_25 ch13 SSS Male 2mM His
+12_09_25_25 ch14 SSS Male 8mM His
+12_09_25_25 ch15 SSS Male VEH
+12_09_25_25 ch16 Rye Male 2mM His
+12_09_25_25 ch17 Rye Male 8mM His
+12_09_25_25 ch18 Rye Male VEH
+12_09_25_25 ch19 Fmn Male 2mM His
+12_09_25_25 ch20 Fmn Male 8mM His
+12_09_25_25 ch21 Fmn Male VEH
+12_09_25_25 ch22 Iso Male 2mM His
+12_09_25_25 ch23 Iso Male 8mM His
+12_09_25_25 ch24 Iso Male VEH
+12_09_25_25 ch25 SSS Male 2mM His
+12_09_25_25 ch26 SSS Male 8mM His
+12_09_25_25 ch27 SSS Male VEH
+12_09_25_25 ch28 SSS Male 2mM His
+12_09_25_25 ch29 SSS Male 8mM His
+12_09_25_25 ch30 SSS Male VEH
+12_09_25_25 ch31 na na na
+12_09_25_25 ch32 na na na
+13_09_25_25 ch1 SSS Male 2mM His
+13_09_25_25 ch2 SSS Male 8mM His
+13_09_25_25 ch3 SSS Male VEH
+13_09_25_25 ch4 Rye Male 2mM His
+13_09_25_25 ch5 Rye Male 8mM His
+13_09_25_25 ch6 Rye Male VEH
+13_09_25_25 ch7 Fmn Male 2mM His
+13_09_25_25 ch8 Fmn Male 8mM His
+13_09_25_25 ch9 Fmn Male VEH
+13_09_25_25 ch10 Iso Male 2mM His
+13_09_25_25 ch11 Iso Male 8mM His
+13_09_25_25 ch12 Iso Male VEH
+13_09_25_25 ch13 SSS Male 2mM His
+13_09_25_25 ch14 SSS Male 8mM His
+13_09_25_25 ch15 SSS Male VEH
+13_09_25_25 ch16 Rye Male 2mM His
+13_09_25_25 ch17 Rye Male 8mM His
+13_09_25_25 ch18 Rye Male VEH
+13_09_25_25 ch19 Fmn Male 2mM His
+13_09_25_25 ch20 Fmn Male 8mM His
+13_09_25_25 ch21 Fmn Male VEH
+13_09_25_25 ch22 Iso Male 2mM His
+13_09_25_25 ch23 Iso Male 8mM His
+13_09_25_25 ch24 Iso Male VEH
+13_09_25_25 ch25 SSS Male 2mM His
+13_09_25_25 ch26 SSS Male 8mM His
+13_09_25_25 ch27 SSS Male VEH
+13_09_25_25 ch28 SSS Male 2mM His
+13_09_25_25 ch29 SSS Male 8mM His
+13_09_25_25 ch30 SSS Male VEH
+13_09_25_25 ch31 na na na
+13_09_25_25 ch32 na na na
+5_10_16_25  ch1 Iso Male 2mM Spd
+5_10_16_25  ch2 Iso Male 2mM Put
+5_10_16_25  ch3 Iso Male VEH
+5_10_16_25  ch4 Fmn Male 2mM Spd
+5_10_16_25  ch5 Fmn Male 2mM Put
+5_10_16_25  ch6 Fmn Male VEH
+5_10_16_25  ch7 Rye Male 2mM Spd
+5_10_16_25  ch8 Rye Male 2mM Put
+5_10_16_25  ch9 Rye Male VEH
+5_10_16_25  ch10 SSS Male 2mM Spd
+5_10_16_25  ch11 SSS Male 2mM Put
+5_10_16_25  ch12 SSS Male VEH
+5_10_16_25  ch13 Iso Male 2mM Spd
+5_10_16_25  ch14 Iso Male 2mM Put
+5_10_16_25  ch15 Iso Male VEH
+5_10_16_25  ch16 Fmn Male 2mM Spd
+5_10_16_25  ch17 Fmn Male 2mM Put
+5_10_16_25  ch18 Fmn Male VEH
+5_10_16_25  ch19 Rye Male 2mM Spd
+5_10_16_25  ch20 Rye Male 2mM Put
+5_10_16_25  ch21 Rye Male VEH
+5_10_16_25  ch22 SSS Male 2mM Spd
+5_10_16_25  ch23 SSS Male 2mM Put
+5_10_16_25  ch24 SSS Male VEH
+5_10_16_25  ch25 Iso Male 2mM Spd
+5_10_16_25  ch26 Iso Male 2mM Put
+5_10_16_25  ch27 Iso Male VEH
+5_10_16_25  ch28 Fmn Male 2mM Spd
+5_10_16_25  ch29 Fmn Male 2mM Put
+5_10_16_25  ch30 Fmn Male VEH
+5_10_16_25  ch31 na na na
+5_10_16_25  ch32 na na na
+6_10_16_25  ch1 Iso Male 2mM Spd
+6_10_16_25  ch2 Iso Male 2mM Put
+6_10_16_25  ch3 Iso Male VEH
+6_10_16_25  ch4 Fmn Male 2mM Spd
+6_10_16_25  ch5 Fmn Male 2mM Put
+6_10_16_25  ch6 Fmn Male VEH
+6_10_16_25  ch7 Rye Male 2mM Spd
+6_10_16_25  ch8 Rye Male 2mM Put
+6_10_16_25  ch9 Rye Male VEH
+6_10_16_25  ch10 SSS Male 2mM Spd
+6_10_16_25  ch11 SSS Male 2mM Put
+6_10_16_25  ch12 SSS Male VEH
+6_10_16_25  ch13 Iso Male 2mM Spd
+6_10_16_25  ch14 Iso Male 2mM Put
+6_10_16_25  ch15 Iso Male VEH
+6_10_16_25  ch16 Fmn Male 2mM Spd
+6_10_16_25  ch17 Fmn Male 2mM Put
+6_10_16_25  ch18 Fmn Male VEH
+6_10_16_25  ch19 Rye Male 2mM Spd
+6_10_16_25  ch20 Rye Male 2mM Put
+6_10_16_25  ch21 Rye Male VEH
+6_10_16_25  ch22 SSS Male 2mM Spd
+6_10_16_25  ch23 SSS Male 2mM Put
+6_10_16_25  ch24 SSS Male VEH
+6_10_16_25  ch25 Iso Male 2mM Spd
+6_10_16_25  ch26 Iso Male 2mM Put
+6_10_16_25  ch27 Iso Male VEH
+6_10_16_25  ch28 Fmn Male 2mM Spd
+6_10_16_25  ch29 Fmn Male 2mM Put
+6_10_16_25  ch30 Fmn Male VEH
+6_10_16_25  ch31 na na na
+6_10_16_25  ch32 na na na
+7_10_16_25  ch1 Iso Male 2mM Spd
+7_10_16_25  ch2 Iso Male 2mM Put
+7_10_16_25  ch3 Iso Male VEH
+7_10_16_25  ch4 Fmn Male 2mM Spd
+7_10_16_25  ch5 Fmn Male 2mM Put
+7_10_16_25  ch6 Fmn Male VEH
+7_10_16_25  ch7 Rye Male 2mM Spd
+7_10_16_25  ch8 Rye Male 2mM Put
+7_10_16_25  ch9 Rye Male VEH
+7_10_16_25  ch10 SSS Male 2mM Spd
+7_10_16_25  ch11 SSS Male 2mM Put
+7_10_16_25  ch12 SSS Male VEH
+7_10_16_25  ch13 Iso Male 2mM Spd
+7_10_16_25  ch14 Iso Male 2mM Put
+7_10_16_25  ch15 Iso Male VEH
+7_10_16_25  ch16 Fmn Male 2mM Spd
+7_10_16_25  ch17 Fmn Male 2mM Put
+7_10_16_25  ch18 Fmn Male VEH
+7_10_16_25  ch19 Rye Male 2mM Spd
+7_10_16_25  ch20 Rye Male 2mM Put
+7_10_16_25  ch21 Rye Male VEH
+7_10_16_25  ch22 SSS Male 2mM Spd
+7_10_16_25  ch23 SSS Male 2mM Put
+7_10_16_25  ch24 SSS Male VEH
+7_10_16_25  ch25 Rye Male 2mM Spd
+7_10_16_25  ch26 Rye Male 2mM Put
+7_10_16_25  ch27 Rye Male VEH
+7_10_16_25  ch28 SSS Male 2mM Spd
+7_10_16_25  ch29 SSS Male 2mM Put
+7_10_16_25  ch30 SSS Male VEH
+7_10_16_25  ch31 na na na
+7_10_16_25  ch32 na na na
+8_10_16_25  ch1 Iso Male 2mM Spd
+8_10_16_25  ch2 Iso Male 2mM Put
+8_10_16_25  ch3 Iso Male VEH
+8_10_16_25  ch4 Fmn Male 2mM Spd
+8_10_16_25  ch5 Fmn Male 2mM Put
+8_10_16_25  ch6 Fmn Male VEH
+8_10_16_25  ch7 Rye Male 2mM Spd
+8_10_16_25  ch8 Rye Male 2mM Put
+8_10_16_25  ch9 Rye Male VEH
+8_10_16_25  ch10 SSS Male 2mM Spd
+8_10_16_25  ch11 SSS Male 2mM Put
+8_10_16_25  ch12 SSS Male VEH
+8_10_16_25  ch13 Iso Male 2mM Spd
+8_10_16_25  ch14 Iso Male 2mM Put
+8_10_16_25  ch15 Iso Male VEH
+8_10_16_25  ch16 Fmn Male 2mM Spd
+8_10_16_25  ch17 Fmn Male 2mM Put
+8_10_16_25  ch18 Fmn Male VEH
+8_10_16_25  ch19 Rye Male 2mM Spd
+8_10_16_25  ch20 Rye Male 2mM Put
+8_10_16_25  ch21 Rye Male VEH
+8_10_16_25  ch22 SSS Male 2mM Spd
+8_10_16_25  ch23 SSS Male 2mM Put
+8_10_16_25  ch24 SSS Male VEH
+8_10_16_25  ch25 Rye Male 2mM Spd
+8_10_16_25  ch26 Rye Male 2mM Put
+8_10_16_25  ch27 Rye Male VEH
+8_10_16_25  ch28 SSS Male 2mM Spd
+8_10_16_25  ch29 SSS Male 2mM Put
+8_10_16_25  ch30 SSS Male VEH
+8_10_16_25  ch31 na na na
+8_10_16_25  ch32 na na na
+9_10_16_25  ch1 Iso Female 2mM Spd
+9_10_16_25  ch2 Iso Female 2mM Put
+9_10_16_25  ch3 Iso Female VEH
+9_10_16_25  ch4 Fmn Female 2mM Spd
+9_10_16_25  ch5 Fmn Female 2mM Put
+9_10_16_25  ch6 Fmn Female VEH
+9_10_16_25  ch7 Rye Female 2mM Spd
+9_10_16_25  ch8 Rye Female 2mM Put
+9_10_16_25  ch9 Rye Female VEH
+9_10_16_25  ch10 SSS Female 2mM Spd
+9_10_16_25  ch11 SSS Female 2mM Put
+9_10_16_25  ch12 SSS Female VEH
+9_10_16_25  ch13 Iso Female 2mM Spd
+9_10_16_25  ch14 Iso Female 2mM Put
+9_10_16_25  ch15 Iso Female VEH
+9_10_16_25  ch16 Fmn Female 2mM Spd
+9_10_16_25  ch17 Fmn Female 2mM Put
+9_10_16_25  ch18 Fmn Female VEH
+9_10_16_25  ch19 Rye Female 2mM Spd
+9_10_16_25  ch20 Rye Female 2mM Put
+9_10_16_25  ch21 Rye Female VEH
+9_10_16_25  ch22 SSS Female 2mM Spd
+9_10_16_25  ch23 SSS Female 2mM Put
+9_10_16_25  ch24 SSS Female VEH
+9_10_16_25  ch25 Iso Female 2mM Spd
+9_10_16_25  ch26 Iso Female 2mM Put
+9_10_16_25  ch27 Iso Female VEH
+9_10_16_25  ch28 Fmn Female 2mM Spd
+9_10_16_25  ch29 Fmn Female 2mM Put
+9_10_16_25  ch30 Fmn Female VEH
+9_10_16_25  ch31 na na na
+9_10_16_25  ch32 na na na
+11_10_16_25  ch1 Iso Female 2mM Spd
+11_10_16_25  ch2 Iso Female 2mM Put
+11_10_16_25  ch3 Iso Female VEH
+11_10_16_25  ch4 Fmn Female 2mM Spd
+11_10_16_25  ch5 Fmn Female 2mM Put
+11_10_16_25  ch6 Fmn Female VEH
+11_10_16_25  ch7 Rye Female 2mM Spd
+11_10_16_25  ch8 Rye Female 2mM Put
+11_10_16_25  ch9 Rye Female VEH
+11_10_16_25  ch10 SSS Female 2mM Spd
+11_10_16_25  ch11 SSS Female 2mM Put
+11_10_16_25  ch12 SSS Female VEH
+11_10_16_25  ch13 Iso Female 2mM Spd
+11_10_16_25  ch14 Iso Female 2mM Put
+11_10_16_25  ch15 Iso Female VEH
+11_10_16_25  ch16 Fmn Female 2mM Spd
+11_10_16_25  ch17 Fmn Female 2mM Put
+11_10_16_25  ch18 Fmn Female VEH
+11_10_16_25  ch19 Rye Female 2mM Spd
+11_10_16_25  ch20 Rye Female 2mM Put
+11_10_16_25  ch21 Rye Female VEH
+11_10_16_25  ch22 SSS Female 2mM Spd
+11_10_16_25  ch23 SSS Female 2mM Put
+11_10_16_25  ch24 SSS Female VEH
+11_10_16_25  ch25 Iso Female 2mM Spd
+11_10_16_25  ch26 Iso Female 2mM Put
+11_10_16_25  ch27 Iso Female VEH
+11_10_16_25  ch28 Fmn Female 2mM Spd
+11_10_16_25  ch29 Fmn Female 2mM Put
+11_10_16_25  ch30 Fmn Female VEH
+11_10_16_25  ch31 na na na
+11_10_16_25  ch32 na na na
+12_10_16_25  ch1 Iso Female 2mM Spd
+12_10_16_25  ch2 Iso Female 2mM Put
+12_10_16_25  ch3 Iso Female VEH
+12_10_16_25  ch4 Fmn Female 2mM Spd
+12_10_16_25  ch5 Fmn Female 2mM Put
+12_10_16_25  ch6 Fmn Female VEH
+12_10_16_25  ch7 Rye Female 2mM Spd
+12_10_16_25  ch8 Rye Female 2mM Put
+12_10_16_25  ch9 Rye Female VEH
+12_10_16_25  ch10 SSS Female 2mM Spd
+12_10_16_25  ch11 SSS Female 2mM Put
+12_10_16_25  ch12 SSS Female VEH
+12_10_16_25  ch13 Iso Female 2mM Spd
+12_10_16_25  ch14 Iso Female 2mM Put
+12_10_16_25  ch15 Iso Female VEH
+12_10_16_25  ch16 Fmn Female 2mM Spd
+12_10_16_25  ch17 Fmn Female 2mM Put
+12_10_16_25  ch18 Fmn Female VEH
+12_10_16_25  ch19 Rye Female 2mM Spd
+12_10_16_25  ch20 Rye Female 2mM Put
+12_10_16_25  ch21 Rye Female VEH
+12_10_16_25  ch22 SSS Female 2mM Spd
+12_10_16_25  ch23 SSS Female 2mM Put
+12_10_16_25  ch24 SSS Female VEH
+12_10_16_25  ch25 Rye Female 2mM Spd
+12_10_16_25  ch26 Rye Female 2mM Put
+12_10_16_25  ch27 Rye Female VEH
+12_10_16_25  ch28 SSS Female 2mM Spd
+12_10_16_25  ch29 SSS Female 2mM Put
+12_10_16_25  ch30 SSS Female VEH
+12_10_16_25  ch31 na na na
+12_10_16_25  ch32 na na na
+13_10_16_25  ch1 Iso Female 2mM Spd
+13_10_16_25  ch2 Iso Female 2mM Put
+13_10_16_25  ch3 Iso Female VEH
+13_10_16_25  ch4 Fmn Female 2mM Spd
+13_10_16_25  ch5 Fmn Female 2mM Put
+13_10_16_25  ch6 Fmn Female VEH
+13_10_16_25  ch7 Rye Female 2mM Spd
+13_10_16_25  ch8 Rye Female 2mM Put
+13_10_16_25  ch9 Rye Female VEH
+13_10_16_25  ch10 SSS Female 2mM Spd
+13_10_16_25  ch11 SSS Female 2mM Put
+13_10_16_25  ch12 SSS Female VEH
+13_10_16_25  ch13 Iso Female 2mM Spd
+13_10_16_25  ch14 Iso Female 2mM Put
+13_10_16_25  ch15 Iso Female VEH
+13_10_16_25  ch16 Fmn Female 2mM Spd
+13_10_16_25  ch17 Fmn Female 2mM Put
+13_10_16_25  ch18 Fmn Female VEH
+13_10_16_25  ch19 Rye Female 2mM Spd
+13_10_16_25  ch20 Rye Female 2mM Put
+13_10_16_25  ch21 Rye Female VEH
+13_10_16_25  ch22 SSS Female 2mM Spd
+13_10_16_25  ch23 SSS Female 2mM Put
+13_10_16_25  ch24 SSS Female VEH
+13_10_16_25  ch25 Rye Female 2mM Spd
+13_10_16_25  ch26 Rye Female 2mM Put
+13_10_16_25  ch27 Rye Female VEH
+13_10_16_25  ch28 SSS Female 2mM Spd
+13_10_16_25  ch29 SSS Female 2mM Put
+13_10_16_25  ch30 SSS Female VEH
+13_10_16_25  ch31 na na na
+13_10_16_25  ch32 na na na
+5_10_02_25  ch1 SSS Male 2mM Cys
+5_10_02_25  ch2 SSS Male 4mM Cys
+5_10_02_25  ch3 SSS Male VEH
+5_10_02_25  ch4 Rye Male 2mM Cys
+5_10_02_25  ch5 Rye Male 4mM Cys
+5_10_02_25  ch6 Rye Male VEH
+5_10_02_25  ch7 Fmn Male 2mM Cys
+5_10_02_25  ch8 Fmn Male 4mM Cys
+5_10_02_25  ch9 Fmn Male VEH
+5_10_02_25  ch10 Iso Male 2mM Cys
+5_10_02_25  ch11 Iso Male 4mM Cys
+5_10_02_25  ch12 Iso Male VEH
+5_10_02_25  ch13 SSS Male 2mM Cys
+5_10_02_25  ch14 SSS Male 4mM Cys
+5_10_02_25  ch15 SSS Male VEH
+5_10_02_25  ch16 Rye Male 2mM Cys
+5_10_02_25  ch17 Rye Male 4mM Cys
+5_10_02_25  ch18 Rye Male VEH
+5_10_02_25  ch19 Fmn Male 2mM Cys
+5_10_02_25  ch20 Fmn Male 4mM Cys
+5_10_02_25  ch21 Fmn Male VEH
+5_10_02_25  ch22 Iso Male 2mM Cys
+5_10_02_25  ch23 Iso Male 4mM Cys
+5_10_02_25  ch24 Iso Male VEH
+5_10_02_25  ch25 SSS Male 2mM Cys
+5_10_02_25  ch26 SSS Male 4mM Cys
+5_10_02_25  ch27 SSS Male VEH
+5_10_02_25  ch28 Rye Male 2mM Cys
+5_10_02_25  ch29 Rye Male 4mM Cys
+5_10_02_25  ch30 Rye Male VEH
+5_10_02_25  ch31 Fmn Male 2mM Cys
+5_10_02_25  ch32 Fmn Male 4mM Cys
+6_10_02_25  ch1 Fmn Male VEH
+6_10_02_25  ch2 Iso Male 2mM Cys
+6_10_02_25  ch3 Iso Male 4mM Cys
+6_10_02_25  ch4 Iso Male VEH
+6_10_02_25  ch5 SSS Male VEH
+6_10_02_25  ch6 Rye Male 2mM Cys
+6_10_02_25  ch7 Rye Male 4mM Cys
+6_10_02_25  ch8 Rye Male VEH
+6_10_02_25  ch9 Fmn Male 2mM Cys
+6_10_02_25  ch10 Fmn Male 4mM Cys
+6_10_02_25  ch11 Fmn Male VEH
+6_10_02_25  ch12 Iso Male 2mM Cys
+6_10_02_25  ch13 Iso Male 4mM Cys
+6_10_02_25  ch14 Iso Male VEH
+6_10_02_25  ch15 SSS Male 2mM Cys
+6_10_02_25  ch16 SSS Male 4mM Cys
+6_10_02_25  ch17 SSS Male VEH
+6_10_02_25  ch18 Rye Male 2mM Cys
+6_10_02_25  ch19 Rye Male 4mM Cys
+6_10_02_25  ch20 Rye Male VEH
+6_10_02_25  ch21 Fmn Male 2mM Cys
+6_10_02_25  ch22 Fmn Male 4mM Cys
+6_10_02_25  ch23 Fmn Male VEH
+6_10_02_25  ch24 Iso Male 2mM Cys
+6_10_02_25  ch25 Iso Male 4mM Cys
+6_10_02_25  ch26 Iso Male VEH
+6_10_02_25  ch27 SSS Male 2mM Cys
+6_10_02_25  ch28 SSS Male 4mM Cys
+6_10_02_25  ch29 SSS Male VEH
+6_10_02_25  ch30 Rye Male 2mM Cys
+6_10_02_25  ch31 Rye Male 4mM Cys
+6_10_02_25  ch32 Rye Male VEH
+7_10_02_25  ch1 Fmn Male 2mM Cys
+7_10_02_25  ch2 Fmn Male 4mM Cys
+7_10_02_25  ch3 Fmn Male VEH
+7_10_02_25  ch4 Iso Male 2mM Cys
+7_10_02_25  ch5 Iso Male 4mM Cys
+7_10_02_25  ch6 Iso Male VEH
+7_10_02_25  ch7 SSS Male 2mM Cys
+7_10_02_25  ch8 SSS Male 4mM Cys
+7_10_02_25  ch9 SSS Male VEH
+7_10_02_25  ch10 Rye Male 2mM Cys
+7_10_02_25  ch11 Rye Male 4mM Cys
+7_10_02_25  ch12 Rye Male VEH
+7_10_02_25  ch13 Fmn Male 2mM Cys
+7_10_02_25  ch14 Fmn Male 4mM Cys
+7_10_02_25  ch15 Fmn Male VEH
+7_10_02_25  ch16 Iso Male 2mM Cys
+7_10_02_25  ch17 Iso Male 4mM Cys
+7_10_02_25  ch18 Iso Male VEH
+7_10_02_25  ch19 SSS Male 2mM Cys
+7_10_02_25  ch20 SSS Male 4mM Cys
+7_10_02_25  ch21 SSS Male VEH
+7_10_02_25  ch22 Rye Male 2mM Cys
+7_10_02_25  ch23 Rye Male 4mM Cys
+7_10_02_25  ch24 Rye Male VEH
+7_10_02_25  ch25 Fmn Male 2mM Cys
+7_10_02_25  ch26 Fmn Male 4mM Cys
+7_10_02_25  ch27 Fmn Male VEH
+7_10_02_25  ch28 Iso Male 2mM Cys
+7_10_02_25  ch29 Iso Male 4mM Cys
+7_10_02_25  ch30 Iso Male VEH
+7_10_02_25  ch31 SSS Male 2mM Cys
+7_10_02_25  ch32 SSS Male 4mM Cys
+8_10_02_25  ch1 SSS Male VEH
+8_10_02_25  ch2 Rye Male 2mM Cys
+8_10_02_25  ch3 Rye Male 4mM Cys
+8_10_02_25  ch4 Rye Male VEH
+8_10_02_25  ch5 Fmn Male 2mM Cys
+8_10_02_25  ch6 Fmn Male 4mM Cys
+8_10_02_25  ch7 Fmn Male VEH
+8_10_02_25  ch8 Iso Male 2mM Cys
+8_10_02_25  ch9 Iso Male 4mM Cys
+8_10_02_25  ch10 Iso Male VEH
+8_10_02_25  ch11 SSS Male 2mM Cys
+8_10_02_25  ch12 SSS Male 4mM Cys
+8_10_02_25  ch13 SSS Male VEH
+8_10_02_25  ch14 Rye Male 2mM Cys
+8_10_02_25  ch15 Rye Male 4mM Cys
+8_10_02_25  ch16 Rye Male VEH
+8_10_02_25  ch17 Fmn Male 2mM Cys
+8_10_02_25  ch18 Fmn Male 4mM Cys
+8_10_02_25  ch19 Fmn Male VEH
+8_10_02_25  ch20 Iso Male 2mM Cys
+8_10_02_25  ch21 Iso Male 4mM Cys
+8_10_02_25  ch22 Iso Male VEH
+8_10_02_25  ch23 SSS Male 2mM Cys
+8_10_02_25  ch24 SSS Male 4mM Cys
+8_10_02_25  ch25 SSS Male VEH
+8_10_02_25  ch26 Rye Male 2mM Cys
+8_10_02_25  ch27 Rye Male 4mM Cys
+8_10_02_25  ch28 Rye Male VEH
+8_10_02_25  ch29 Fmn Male 2mM Cys
+8_10_02_25  ch30 Fmn Male 4mM Cys
+8_10_02_25  ch31 Fmn Male VEH
+8_10_02_25  ch32 Iso Male 2mM Cys
+9_10_02_25  ch1 Iso Male 4mM Cys
+9_10_02_25  ch2 Iso Male VEH
+9_10_02_25  ch3 SSS Male 2mM Cys
+9_10_02_25  ch4 SSS Male 4mM Cys
+9_10_02_25  ch5 SSS Male VEH
+9_10_02_25  ch6 Rye Male 2mM Cys
+9_10_02_25  ch7 Rye Male 4mM Cys
+9_10_02_25  ch8 Rye Male VEH
+9_10_02_25  ch9 Fmn Male 2mM Cys
+9_10_02_25  ch10 Fmn Male 4mM Cys
+9_10_02_25  ch11 Fmn Male VEH
+9_10_02_25  ch12 Iso Male 2mM Cys
+9_10_02_25  ch13 Iso Male 4mM Cys
+9_10_02_25  ch14 Iso Male VEH
+9_10_02_25  ch15 SSS Male 2mM Cys
+9_10_02_25  ch16 SSS Male 4mM Cys
+9_10_02_25  ch17 SSS Male VEH
+9_10_02_25  ch18 Rye Male 2mM Cys
+9_10_02_25  ch19 Rye Male 4mM Cys
+9_10_02_25  ch20 Rye Male VEH
+9_10_02_25  ch21 Fmn Male 2mM Cys
+9_10_02_25  ch22 Fmn Male 4mM Cys
+9_10_02_25  ch23 Fmn Male VEH
+9_10_02_25  ch24 Iso Male 2mM Cys
+9_10_02_25  ch25 Iso Male 4mM Cys
+9_10_02_25  ch26 Iso Male VEH
+9_10_02_25  ch27 SSS Male 2mM Cys
+9_10_02_25  ch28 SSS Male 4mM Cys
+9_10_02_25  ch29 SSS Male VEH
+9_10_02_25  ch30 Rye Male 2mM Cys
+9_10_02_25  ch31 Rye Male 4mM Cys
+9_10_02_25  ch32 Rye Male 4mM Cys
+11_10_02_25  ch1 SSS Female 2mM Cys
+11_10_02_25  ch2 SSS Female 4mM Cys
+11_10_02_25  ch3 SSS Female VEH
+11_10_02_25  ch4 Rye Female 2mM Cys
+11_10_02_25  ch5 Rye Female 4mM Cys
+11_10_02_25  ch6 Rye Female VEH
+11_10_02_25  ch7 Fmn Female 2mM Cys
+11_10_02_25  ch8 Fmn Female 4mM Cys
+11_10_02_25  ch9 Fmn Female VEH
+11_10_02_25  ch10 Iso Female 2mM Cys
+11_10_02_25  ch11 Iso Female 4mM Cys
+11_10_02_25  ch12 Iso Female VEH
+11_10_02_25  ch13 SSS Female 2mM Cys
+11_10_02_25  ch14 SSS Female 4mM Cys
+11_10_02_25  ch15 SSS Female VEH
+11_10_02_25  ch16 Rye Female 2mM Cys
+11_10_02_25  ch17 Rye Female 4mM Cys
+11_10_02_25  ch18 Rye Female VEH
+11_10_02_25  ch19 Fmn Female 2mM Cys
+11_10_02_25  ch20 Fmn Female 4mM Cys
+11_10_02_25  ch21 Fmn Female VEH
+11_10_02_25  ch22 Iso Female 2mM Cys
+11_10_02_25  ch23 Iso Female 4mM Cys
+11_10_02_25  ch24 Iso Female VEH
+11_10_02_25  ch25 SSS Female 2mM Cys
+11_10_02_25  ch26 SSS Female 4mM Cys
+11_10_02_25  ch27 SSS Female VEH
+11_10_02_25  ch28 Rye Female 2mM Cys
+11_10_02_25  ch29 Rye Female 4mM Cys
+11_10_02_25  ch30 Rye Female VEH
+11_10_02_25  ch31 Fmn Female 2mM Cys
+11_10_02_25  ch32 Fmn Female 4mM Cys
+12_10_02_25  ch1 Fmn Female VEH
+12_10_02_25  ch2 Iso Female 2mM Cys
+12_10_02_25  ch3 Iso Female 4mM Cys
+12_10_02_25  ch4 Iso Female VEH
+12_10_02_25  ch5 SSS Female VEH
+12_10_02_25  ch6 Rye Female 2mM Cys
+12_10_02_25  ch7 Rye Female 4mM Cys
+12_10_02_25  ch8 Rye Female VEH
+12_10_02_25  ch9 Fmn Female 2mM Cys
+12_10_02_25  ch10 Fmn Female 4mM Cys
+12_10_02_25  ch11 Fmn Female VEH
+12_10_02_25  ch12 Iso Female 2mM Cys
+12_10_02_25  ch13 Iso Female 4mM Cys
+12_10_02_25  ch14 Iso Female VEH
+12_10_02_25  ch15 SSS Female 2mM Cys
+12_10_02_25  ch16 SSS Female 4mM Cys
+12_10_02_25  ch17 SSS Female VEH
+12_10_02_25  ch18 Rye Female 2mM Cys
+12_10_02_25  ch19 Rye Female 4mM Cys
+12_10_02_25  ch20 Rye Female VEH
+12_10_02_25  ch21 Fmn Female 2mM Cys
+12_10_02_25  ch22 Fmn Female 4mM Cys
+12_10_02_25  ch23 Fmn Female VEH
+12_10_02_25  ch24 Iso Female 2mM Cys
+12_10_02_25  ch25 Iso Female 4mM Cys
+12_10_02_25  ch26 Iso Female VEH
+12_10_02_25  ch27 SSS Female 2mM Cys
+12_10_02_25  ch28 SSS Female 4mM Cys
+12_10_02_25  ch29 SSS Female VEH
+12_10_02_25  ch30 Rye Female 2mM Cys
+12_10_02_25  ch31 Rye Female 4mM Cys
+12_10_02_25  ch32 Rye Female VEH
+13_10_02_25  ch1 Fmn Female 2mM Cys
+13_10_02_25  ch2 Fmn Female 4mM Cys
+13_10_02_25  ch3 Fmn Female VEH
+13_10_02_25  ch4 Iso Female 2mM Cys
+13_10_02_25  ch5 Iso Female 4mM Cys
+13_10_02_25  ch6 Iso Female VEH
+13_10_02_25  ch7 SSS Female 2mM Cys
+13_10_02_25  ch8 SSS Female 4mM Cys
+13_10_02_25  ch9 SSS Female VEH
+13_10_02_25  ch10 Rye Female 2mM Cys
+13_10_02_25  ch11 Rye Female 4mM Cys
+13_10_02_25  ch12 Rye Female VEH
+13_10_02_25  ch13 Fmn Female 2mM Cys
+13_10_02_25  ch14 Fmn Female 4mM Cys
+13_10_02_25  ch15 Fmn Female VEH
+13_10_02_25  ch16 Iso Female 2mM Cys
+13_10_02_25  ch17 Iso Female 4mM Cys
+13_10_02_25  ch18 Iso Female VEH
+13_10_02_25  ch19 SSS Female 2mM Cys
+13_10_02_25  ch20 SSS Female 4mM Cys
+13_10_02_25  ch21 SSS Female VEH
+13_10_02_25  ch22 Rye Female 2mM Cys
+13_10_02_25  ch23 Rye Female 4mM Cys
+13_10_02_25  ch24 Rye Female VEH
+13_10_02_25  ch25 Fmn Female 2mM Cys
+13_10_02_25  ch26 Fmn Female 4mM Cys
+13_10_02_25  ch27 Fmn Female VEH
+13_10_02_25  ch28 Iso Female 2mM Cys
+13_10_02_25  ch29 Iso Female 4mM Cys
+13_10_02_25  ch30 Iso Female VEH
+13_10_02_25  ch31 SSS Female 2mM Cys
+13_10_02_25  ch32 SSS Female 4mM Cys
+14_10_02_25  ch1 SSS Female VEH
+14_10_02_25  ch2 Rye Female 2mM Cys
+14_10_02_25  ch3 Rye Female 4mM Cys
+14_10_02_25  ch4 Rye Female VEH
+14_10_02_25  ch5 Fmn Female 2mM Cys
+14_10_02_25  ch6 Fmn Female 4mM Cys
+14_10_02_25  ch7 Fmn Female VEH
+14_10_02_25  ch8 Iso Female 2mM Cys
+14_10_02_25  ch9 Iso Female 4mM Cys
+14_10_02_25  ch10 Iso Female VEH
+14_10_02_25  ch11 SSS Female 2mM Cys
+14_10_02_25  ch12 SSS Female 4mM Cys
+14_10_02_25  ch13 SSS Female VEH
+14_10_02_25  ch14 Rye Female 2mM Cys
+14_10_02_25  ch15 Rye Female 4mM Cys
+14_10_02_25  ch16 Rye Female VEH
+14_10_02_25  ch17 Fmn Female 2mM Cys
+14_10_02_25  ch18 Fmn Female 4mM Cys
+14_10_02_25  ch19 Fmn Female VEH
+14_10_02_25  ch20 Iso Female 2mM Cys
+14_10_02_25  ch21 Iso Female 4mM Cys
+14_10_02_25  ch22 Iso Female VEH
+14_10_02_25  ch23 SSS Female 2mM Cys
+14_10_02_25  ch24 SSS Female 4mM Cys
+14_10_02_25  ch25 SSS Female VEH
+14_10_02_25  ch26 Rye Female 2mM Cys
+14_10_02_25  ch27 Rye Female 4mM Cys
+14_10_02_25  ch28 Rye Female VEH
+14_10_02_25  ch29 Fmn Female 2mM Cys
+14_10_02_25  ch30 Fmn Female 4mM Cys
+14_10_02_25  ch31 Fmn Female VEH
+14_10_02_25  ch32 Iso Female 2mM Cys
+15_10_02_25  ch1 Iso Female 4mM Cys
+15_10_02_25  ch2 Iso Female VEH
+15_10_02_25  ch3 SSS Female 2mM Cys
+15_10_02_25  ch4 SSS Female 4mM Cys
+15_10_02_25  ch5 SSS Female VEH
+15_10_02_25  ch6 Rye Female 2mM Cys
+15_10_02_25  ch7 Rye Female 4mM Cys
+15_10_02_25  ch8 Rye Female VEH
+15_10_02_25  ch9 Fmn Female 2mM Cys
+15_10_02_25  ch10 Fmn Female 4mM Cys
+15_10_02_25  ch11 Fmn Female VEH
+15_10_02_25  ch12 Iso Female 2mM Cys
+15_10_02_25  ch13 Iso Female 4mM Cys
+15_10_02_25  ch14 Iso Female VEH
+15_10_02_25  ch15 SSS Female 2mM Cys
+15_10_02_25  ch16 SSS Female 4mM Cys
+15_10_02_25  ch17 SSS Female VEH
+15_10_02_25  ch18 Rye Female 2mM Cys
+15_10_02_25  ch19 Rye Female 4mM Cys
+15_10_02_25  ch20 Rye Female VEH
+15_10_02_25  ch21 Fmn Female 2mM Cys
+15_10_02_25  ch22 Fmn Female 4mM Cys
+15_10_02_25  ch23 Fmn Female VEH
+15_10_02_25  ch24 Iso Female 2mM Cys
+15_10_02_25  ch25 Iso Female 4mM Cys
+15_10_02_25  ch26 Iso Female VEH
+15_10_02_25  ch27 SSS Female 2mM Cys
+15_10_02_25  ch28 SSS Female 4mM Cys
+15_10_02_25  ch29 SSS Female VEH
+15_10_02_25  ch30 Rye Female 2mM Cys
+15_10_02_25  ch31 Rye Female 4mM Cys
+15_10_02_25  ch32 Rye Female 4mM Cys
+13_11_14_25  ch1 SSS Male 2mM Thr
+13_11_14_25  ch2 SSS Male 8mM Thr
+13_11_14_25  ch3 SSS Male VEH
+13_11_14_25  ch4 Rye Male 2mM Thr
+13_11_14_25  ch5 Rye Male 8mM Thr
+13_11_14_25  ch6 Rye Male VEH
+13_11_14_25  ch7 Fmn Male 2mM Thr
+13_11_14_25  ch8 Fmn Male 8mM Thr
+13_11_14_25  ch9 Fmn Male VEH
+13_11_14_25  ch10 Iso Male 2mM Thr
+13_11_14_25  ch11 SSS Male 2mM Thr
+13_11_14_25  ch12 SSS Male 8mM Thr
+13_11_14_25  ch13 SSS Male VEH
+13_11_14_25  ch14 Rye Male 2mM Thr
+13_11_14_25  ch15 Rye Male 8mM Thr
+13_11_14_25  ch16 Rye Male VEH
+13_11_14_25  ch17 Fmn Male 2mM Thr
+13_11_14_25  ch18 Fmn Male 8mM Thr
+13_11_14_25  ch19 Fmn Male VEH
+13_11_14_25  ch20 Iso Male 8mM Thr
+13_11_14_25  ch21 SSS Male 2mM Thr
+13_11_14_25  ch22 SSS Male 8mM Thr
+13_11_14_25  ch23 SSS Male VEH
+13_11_14_25  ch24 Rye Male 2mM Thr
+13_11_14_25  ch25 Rye Male 8mM Thr
+13_11_14_25  ch26 Rye Male VEH
+13_11_14_25  ch27 Fmn Male 2mM Thr
+13_11_14_25  ch28 Fmn Male 8mM Thr
+13_11_14_25  ch29 Fmn Male VEH
+13_11_14_25  ch30 Iso Male 2mM Thr
+13_11_14_25  ch31 Iso Male 8mM Thr
+13_11_14_25  ch32 Iso Male VEH
+14_11_14_25  ch1 SSS Male 2mM Thr
+14_11_14_25  ch2 SSS Male 8mM Thr
+14_11_14_25  ch3 SSS Male VEH
+14_11_14_25  ch4 Rye Male 2mM Thr
+14_11_14_25  ch5 Rye Male 8mM Thr
+14_11_14_25  ch6 Rye Male VEH
+14_11_14_25  ch7 Fmn Male 2mM Thr
+14_11_14_25  ch8 Fmn Male 8mM Thr
+14_11_14_25  ch9 Fmn Male VEH
+14_11_14_25  ch10 Iso Male VEH
+14_11_14_25  ch11 SSS Male 2mM Thr
+14_11_14_25  ch12 SSS Male 8mM Thr
+14_11_14_25  ch13 SSS Male VEH
+14_11_14_25  ch14 Rye Male 2mM Thr
+14_11_14_25  ch15 Rye Male 8mM Thr
+14_11_14_25  ch16 Rye Male VEH
+14_11_14_25  ch17 Fmn Male 2mM Thr
+14_11_14_25  ch18 Fmn Male 8mM Thr
+14_11_14_25  ch19 Fmn Male VEH
+14_11_14_25  ch20 Iso Male 2mM Thr
+14_11_14_25  ch21 SSS Male 2mM Thr
+14_11_14_25  ch22 SSS Male 8mM Thr
+14_11_14_25  ch23 SSS Male VEH
+14_11_14_25  ch24 Rye Male 2mM Thr
+14_11_14_25  ch25 Rye Male 8mM Thr
+14_11_14_25  ch26 Rye Male VEH
+14_11_14_25  ch27 Fmn Male 2mM Thr
+14_11_14_25  ch28 Fmn Male 8mM Thr
+14_11_14_25  ch29 Fmn Male VEH
+14_11_14_25  ch30 Iso Male 2mM Thr
+14_11_14_25  ch31 Iso Male 8mM Thr
+14_11_14_25  ch32 Iso Male VEH
+15_11_14_25  ch1 SSS Male 2mM Thr
+15_11_14_25  ch2 SSS Male 8mM Thr
+15_11_14_25  ch3 SSS Male VEH
+15_11_14_25  ch4 Rye Male 2mM Thr
+15_11_14_25  ch5 Rye Male 8mM Thr
+15_11_14_25  ch6 Rye Male VEH
+15_11_14_25  ch7 Fmn Male 2mM Thr
+15_11_14_25  ch8 Fmn Male 8mM Thr
+15_11_14_25  ch9 Fmn Male VEH
+15_11_14_25  ch10 Iso Male 8mM Thr
+15_11_14_25  ch11 SSS Male 2mM Thr
+15_11_14_25  ch12 SSS Male 8mM Thr
+15_11_14_25  ch13 SSS Male VEH
+15_11_14_25  ch14 Rye Male 2mM Thr
+15_11_14_25  ch15 Rye Male 8mM Thr
+15_11_14_25  ch16 Rye Male VEH
+15_11_14_25  ch17 Fmn Male 2mM Thr
+15_11_14_25  ch18 Fmn Male 8mM Thr
+15_11_14_25  ch19 Fmn Male VEH
+15_11_14_25  ch20 Iso Male VEH
+15_11_14_25  ch21 SSS Male 2mM Thr
+15_11_14_25  ch22 SSS Male 8mM Thr
+15_11_14_25  ch23 SSS Male VEH
+15_11_14_25  ch24 Rye Male 2mM Thr
+15_11_14_25  ch25 Rye Male 8mM Thr
+15_11_14_25  ch26 Rye Male VEH
+15_11_14_25  ch27 Fmn Male 2mM Thr
+15_11_14_25  ch28 Fmn Male 8mM Thr
+15_11_14_25  ch29 Fmn Male VEH
+15_11_14_25  ch30 Iso Male 2mM Thr
+15_11_14_25  ch31 Iso Male 8mM Thr
+15_11_14_25  ch32 Iso Male VEH
+16_11_14_25  ch1 SSS Male 2mM Thr
+16_11_14_25  ch2 SSS Male 8mM Thr
+16_11_14_25  ch3 SSS Male VEH
+16_11_14_25  ch4 Rye Male 2mM Thr
+16_11_14_25  ch5 Rye Male 8mM Thr
+16_11_14_25  ch6 Rye Male VEH
+16_11_14_25  ch7 Fmn Male 2mM Thr
+16_11_14_25  ch8 Fmn Male 8mM Thr
+16_11_14_25  ch9 Fmn Male VEH
+16_11_14_25  ch10 Iso Male 2mM Thr
+16_11_14_25  ch11 SSS Male 2mM Thr
+16_11_14_25  ch12 SSS Male 8mM Thr
+16_11_14_25  ch13 SSS Male VEH
+16_11_14_25  ch14 Rye Male 2mM Thr
+16_11_14_25  ch15 Rye Male 8mM Thr
+16_11_14_25  ch16 Rye Male VEH
+16_11_14_25  ch17 Fmn Male 2mM Thr
+16_11_14_25  ch18 Fmn Male 8mM Thr
+16_11_14_25  ch19 Fmn Male VEH
+16_11_14_25  ch20 Iso Male 8mM Thr
+16_11_14_25  ch21 SSS Male 2mM Thr
+16_11_14_25  ch22 SSS Male 8mM Thr
+16_11_14_25  ch23 SSS Male VEH
+16_11_14_25  ch24 Rye Male 2mM Thr
+16_11_14_25  ch25 Rye Male 8mM Thr
+16_11_14_25  ch26 Rye Male VEH
+16_11_14_25  ch27 Fmn Male 2mM Thr
+16_11_14_25  ch28 Fmn Male 8mM Thr
+16_11_14_25  ch29 Fmn Male VEH
+16_11_14_25  ch30 Iso Male 2mM Thr
+16_11_14_25  ch31 Iso Male 8mM Thr
+16_11_14_25  ch32 Iso Male VEH
+49_11_14_25  ch1 SSS Male 2mM Thr
+49_11_14_25  ch2 SSS Male 8mM Thr
+49_11_14_25  ch3 SSS Male VEH
+49_11_14_25  ch4 Rye Male 2mM Thr
+49_11_14_25  ch5 Rye Male 8mM Thr
+49_11_14_25  ch6 Rye Male VEH
+49_11_14_25  ch7 Fmn Male 2mM Thr
+49_11_14_25  ch8 Fmn Male 8mM Thr
+49_11_14_25  ch9 Fmn Male VEH
+49_11_14_25  ch10 Iso Male 2mM Thr
+49_11_14_25  ch11 SSS Male 2mM Thr
+49_11_14_25  ch12 SSS Male 8mM Thr
+49_11_14_25  ch13 SSS Male VEH
+49_11_14_25  ch14 Rye Male 2mM Thr
+49_11_14_25  ch15 Rye Male 8mM Thr
+49_11_14_25  ch16 Rye Male VEH
+49_11_14_25  ch17 Fmn Male 2mM Thr
+49_11_14_25  ch18 Fmn Male 8mM Thr
+49_11_14_25  ch19 Fmn Male VEH
+49_11_14_25  ch20 Iso Male 8mM Thr
+49_11_14_25  ch21 SSS Male 2mM Thr
+49_11_14_25  ch22 SSS Male 8mM Thr
+49_11_14_25  ch23 SSS Male VEH
+49_11_14_25  ch24 Rye Male 2mM Thr
+49_11_14_25  ch25 Rye Male 8mM Thr
+49_11_14_25  ch26 Rye Male VEH
+49_11_14_25  ch27 Fmn Male 2mM Thr
+49_11_14_25  ch28 Fmn Male 8mM Thr
+49_11_14_25  ch29 Fmn Male VEH
+49_11_14_25  ch30 Iso Male 2mM Thr
+49_11_14_25  ch31 Iso Male 8mM Thr
+49_11_14_25  ch32 Iso Male VEH
+50_11_14_25  ch1 SSS Female 2mM Thr
+50_11_14_25  ch2 SSS Female 8mM Thr
+50_11_14_25  ch3 SSS Female VEH
+50_11_14_25  ch4 Rye Female 2mM Thr
+50_11_14_25  ch5 Rye Female 8mM Thr
+50_11_14_25  ch6 Rye Female VEH
+50_11_14_25  ch7 Fmn Female 2mM Thr
+50_11_14_25  ch8 Fmn Female 8mM Thr
+50_11_14_25  ch9 Fmn Female VEH
+50_11_14_25  ch10 Iso Female 2mM Thr
+50_11_14_25  ch11 SSS Female 2mM Thr
+50_11_14_25  ch12 SSS Female 8mM Thr
+50_11_14_25  ch13 SSS Female VEH
+50_11_14_25  ch14 Rye Female 2mM Thr
+50_11_14_25  ch15 Rye Female 8mM Thr
+50_11_14_25  ch16 Rye Female VEH
+50_11_14_25  ch17 Fmn Female 2mM Thr
+50_11_14_25  ch18 Fmn Female 8mM Thr
+50_11_14_25  ch19 Fmn Female VEH
+50_11_14_25  ch20 Iso Female 8mM Thr
+50_11_14_25  ch21 SSS Female 2mM Thr
+50_11_14_25  ch22 SSS Female 8mM Thr
+50_11_14_25  ch23 SSS Female VEH
+50_11_14_25  ch24 Rye Female 2mM Thr
+50_11_14_25  ch25 Rye Female 8mM Thr
+50_11_14_25  ch26 Rye Female VEH
+50_11_14_25  ch27 Fmn Female 2mM Thr
+50_11_14_25  ch28 Fmn Female 8mM Thr
+50_11_14_25  ch29 Fmn Female VEH
+50_11_14_25  ch30 Iso Female 2mM Thr
+50_11_14_25  ch31 Iso Female 8mM Thr
+50_11_14_25  ch32 Iso Female VEH
+51_11_14_25  ch1 SSS Female 2mM Thr
+51_11_14_25  ch2 SSS Female 8mM Thr
+51_11_14_25  ch3 SSS Female VEH
+51_11_14_25  ch4 Rye Female 2mM Thr
+51_11_14_25  ch5 Rye Female 8mM Thr
+51_11_14_25  ch6 Rye Female VEH
+51_11_14_25  ch7 Fmn Female 2mM Thr
+51_11_14_25  ch8 Fmn Female 8mM Thr
+51_11_14_25  ch9 Fmn Female VEH
+51_11_14_25  ch10 Iso Female VEH
+51_11_14_25  ch11 SSS Female 2mM Thr
+51_11_14_25  ch12 SSS Female 8mM Thr
+51_11_14_25  ch13 SSS Female VEH
+51_11_14_25  ch14 Rye Female 2mM Thr
+51_11_14_25  ch15 Rye Female 8mM Thr
+51_11_14_25  ch16 Rye Female VEH
+51_11_14_25  ch17 Fmn Female 2mM Thr
+51_11_14_25  ch18 Fmn Female 8mM Thr
+51_11_14_25  ch19 Fmn Female VEH
+51_11_14_25  ch20 Iso Female 2mM Thr
+51_11_14_25  ch21 SSS Female 2mM Thr
+51_11_14_25  ch22 SSS Female 8mM Thr
+51_11_14_25  ch23 SSS Female VEH
+51_11_14_25  ch24 Rye Female 2mM Thr
+51_11_14_25  ch25 Rye Female 8mM Thr
+51_11_14_25  ch26 Rye Female VEH
+51_11_14_25  ch27 Fmn Female 2mM Thr
+51_11_14_25  ch28 Fmn Female 8mM Thr
+51_11_14_25  ch29 Fmn Female VEH
+51_11_14_25  ch30 Iso Female 2mM Thr
+51_11_14_25  ch31 Iso Female 8mM Thr
+51_11_14_25  ch32 Iso Female VEH
+52_11_14_25  ch1 SSS Female 2mM Thr
+52_11_14_25  ch2 SSS Female 8mM Thr
+52_11_14_25  ch3 SSS Female VEH
+52_11_14_25  ch4 Rye Female 2mM Thr
+52_11_14_25  ch5 Rye Female 8mM Thr
+52_11_14_25  ch6 Rye Female VEH
+52_11_14_25  ch7 Fmn Female 2mM Thr
+52_11_14_25  ch8 Fmn Female 8mM Thr
+52_11_14_25  ch9 Fmn Female VEH
+52_11_14_25  ch10 Iso Female 8mM Thr
+52_11_14_25  ch11 SSS Female 2mM Thr
+52_11_14_25  ch12 SSS Female 8mM Thr
+52_11_14_25  ch13 SSS Female VEH
+52_11_14_25  ch14 Rye Female 2mM Thr
+52_11_14_25  ch15 Rye Female 8mM Thr
+52_11_14_25  ch16 Rye Female VEH
+52_11_14_25  ch17 Fmn Female 2mM Thr
+52_11_14_25  ch18 Fmn Female 8mM Thr
+52_11_14_25  ch19 Fmn Female VEH
+52_11_14_25  ch20 Iso Female VEH
+52_11_14_25  ch21 SSS Female 2mM Thr
+52_11_14_25  ch22 SSS Female 8mM Thr
+52_11_14_25  ch23 SSS Female VEH
+52_11_14_25  ch24 Rye Female 2mM Thr
+52_11_14_25  ch25 Rye Female 8mM Thr
+52_11_14_25  ch26 Rye Female VEH
+52_11_14_25  ch27 Fmn Female 2mM Thr
+52_11_14_25  ch28 Fmn Female 8mM Thr
+52_11_14_25  ch29 Fmn Female VEH
+52_11_14_25  ch30 Iso Female 2mM Thr
+52_11_14_25  ch31 Iso Female 8mM Thr
+52_11_14_25  ch32 Iso Female VEH
+53_11_14_25  ch1 SSS Female 2mM Thr
+53_11_14_25  ch2 SSS Female 8mM Thr
+53_11_14_25  ch3 SSS Female VEH
+53_11_14_25  ch4 Rye Female 2mM Thr
+53_11_14_25  ch5 Rye Female 8mM Thr
+53_11_14_25  ch6 Rye Female VEH
+53_11_14_25  ch7 Fmn Female 2mM Thr
+53_11_14_25  ch8 Fmn Female 8mM Thr
+53_11_14_25  ch9 Fmn Female VEH
+53_11_14_25  ch10 Iso Female 2mM Thr
+53_11_14_25  ch11 SSS Female 2mM Thr
+53_11_14_25  ch12 SSS Female 8mM Thr
+53_11_14_25  ch13 SSS Female VEH
+53_11_14_25  ch14 Rye Female 2mM Thr
+53_11_14_25  ch15 Rye Female 8mM Thr
+53_11_14_25  ch16 Rye Female VEH
+53_11_14_25  ch17 Fmn Female 2mM Thr
+53_11_14_25  ch18 Fmn Female 8mM Thr
+53_11_14_25  ch19 Fmn Female VEH
+53_11_14_25  ch20 Iso Female 8mM Thr
+53_11_14_25  ch21 SSS Female 2mM Thr
+53_11_14_25  ch22 SSS Female 8mM Thr
+53_11_14_25  ch23 SSS Female VEH
+53_11_14_25  ch24 Rye Female 2mM Thr
+53_11_14_25  ch25 Rye Female 8mM Thr
+53_11_14_25  ch26 Rye Female VEH
+53_11_14_25  ch27 Fmn Female 2mM Thr
+53_11_14_25  ch28 Fmn Female 8mM Thr
+53_11_14_25  ch29 Fmn Female VEH
+53_11_14_25  ch30 Iso Female 2mM Thr
+53_11_14_25  ch31 Iso Female 8mM Thr
+53_11_14_25  ch32 Iso Female VEH
+54_11_14_25  ch1 SSS Female 2mM Thr
+54_11_14_25  ch2 SSS Female 8mM Thr
+54_11_14_25  ch3 SSS Female VEH
+54_11_14_25  ch4 Rye Female 2mM Thr
+54_11_14_25  ch5 Rye Female 8mM Thr
+54_11_14_25  ch6 Rye Female VEH
+54_11_14_25  ch7 Fmn Female 2mM Thr
+54_11_14_25  ch8 Fmn Female 8mM Thr
+54_11_14_25  ch9 Fmn Female VEH
+54_11_14_25  ch10 Iso Female 2mM Thr
+54_11_14_25  ch11 SSS Female 2mM Thr
+54_11_14_25  ch12 SSS Female 8mM Thr
+54_11_14_25  ch13 SSS Female VEH
+54_11_14_25  ch14 Rye Female 2mM Thr
+54_11_14_25  ch15 Rye Female 8mM Thr
+54_11_14_25  ch16 Rye Female VEH
+54_11_14_25  ch17 Fmn Female 2mM Thr
+54_11_14_25  ch18 Fmn Female 8mM Thr
+54_11_14_25  ch19 Fmn Female VEH
+54_11_14_25  ch20 Iso Female 8mM Thr
+54_11_14_25  ch21 SSS Female 2mM Thr
+54_11_14_25  ch22 SSS Female 8mM Thr
+54_11_14_25  ch23 SSS Female VEH
+54_11_14_25  ch24 Rye Female 2mM Thr
+54_11_14_25  ch25 Rye Female 8mM Thr
+54_11_14_25  ch26 Rye Female VEH
+54_11_14_25  ch27 Fmn Female 2mM Thr
+54_11_14_25  ch28 Fmn Female 8mM Thr
+54_11_14_25  ch29 Fmn Female VEH
+54_11_14_25  ch30 Iso Female 2mM Thr
+54_11_14_25  ch31 Iso Female 8mM Thr
+54_11_14_25  ch32 Iso Female VEH

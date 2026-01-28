@@ -4,7 +4,7 @@ Sex Difference Analysis Pipeline
 =================================
 Analyzes sex differences within clusters and genotypes
 
-This script replicates the functionality of sexdiff.r:
+This script performs:
 1. Counts of Genotype × Sex per Cluster
 2. Sex distribution tests (Fisher test) within each genotype
 3. Genotype-specific sex comparison heatmaps

@@ -3,8 +3,7 @@
 Fly Health Report Generator (MT-based)
 
 This script generates a health report for flies based on MT (movement) data,
-classifying each fly as Alive, Unhealthy, Dead, or QC_Fail using the same
-logic as the R script heath_report.r.
+classifying each fly as Alive, Unhealthy, Dead, or QC_Fail.
 
 The script can read from either:
 - dam_data_MT.csv (MT-only data, no "reading" column) - preferred for efficiency
