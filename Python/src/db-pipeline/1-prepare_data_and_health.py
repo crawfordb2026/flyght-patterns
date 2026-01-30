@@ -683,7 +683,7 @@ def create_experiment(name, start_date, end_date=None, lights_on=9, lights_off=2
         print(f"Unexpected error creating experiment: {e}")
         return None
 
-def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start):
+def save_to_database(dam_merged, health_report, fly_status, experiment_id, actual_exp_start):
     """Save data to database."""
     if not USE_DATABASE or not DB_AVAILABLE or experiment_id is None:
         return
@@ -692,11 +692,14 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
         engine = create_engine(DATABASE_URL)
         
         # Save flies metadata first (required for foreign key constraint)
+        print(f"  Preparing fly metadata...", end='', flush=True)
         flies = dam_merged[['fly_id', 'monitor', 'channel', 'genotype', 'sex', 'treatment']].drop_duplicates()
         flies['experiment_id'] = experiment_id
+        print(f" ✓ ({len(flies)} unique flies)")
         
         # Save flies using bulk insert with ON CONFLICT to handle duplicates properly
         # PRIMARY KEY is (fly_id, experiment_id), so use ON CONFLICT (fly_id, experiment_id) DO NOTHING
+        print(f"  Inserting flies into database...", end='', flush=True)
         with psycopg2.connect(**DB_CONFIG) as conn:
             with conn.cursor() as cur:
                 try:
@@ -736,7 +739,7 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                     skipped_count = total_rows - inserted_count
                     
                     conn.commit()
-                    print(f"  Saved {inserted_count} new flies, {skipped_count} already existed")
+                    print(f" ✓ ({inserted_count} new, {skipped_count} duplicates)")
                     
                 except psycopg2.Error as e:
                     conn.rollback()
@@ -744,12 +747,15 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                     raise
         
         # Save readings using COPY FROM for bulk insert (much faster than to_sql)
+        print(f"  Preparing readings data ({len(dam_merged):,} rows)...", end='', flush=True)
         readings = dam_merged[['datetime', 'fly_id', 'reading', 'value', 'monitor']].copy()
         readings = readings.rename(columns={'reading': 'reading_type'})
         readings['experiment_id'] = experiment_id
         readings = readings[['experiment_id', 'fly_id', 'datetime', 'reading_type', 'value', 'monitor']]
+        print(f" ✓")
         
         # Use COPY FROM for bulk insert (10-100x faster than to_sql)
+        print(f"  Inserting {len(readings):,} readings into database (this may take several minutes)...", end='', flush=True)
         with psycopg2.connect(**DB_CONFIG) as conn:
             with conn.cursor() as cur:
                 try:
@@ -784,7 +790,7 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                     )
                     
                     conn.commit()
-                    print(f"  Saved {len(readings):,} readings to database")
+                    print(f" ✓")
                     
                 except psycopg2.Error as e:
                     conn.rollback()
@@ -793,6 +799,7 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
         
         # Save health report (if available) using bulk insert
         if health_report is not None and len(health_report) > 0:
+            print(f"  Preparing health report...", end='', flush=True)
             health_db = health_report.copy()
             
             # Create fly_id if not present
@@ -806,8 +813,53 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
             health_db['report_date'] = actual_exp_start
             health_db['status'] = health_db['FINAL_STATUS']
             
-            # Map additional fields if available
-            health_cols = ['fly_id', 'experiment_id', 'report_date', 'status']
+            # To get the detailed metrics, we need to aggregate from fly_status (daily data)
+            # Calculate final day metrics for each fly
+            if fly_status is not None:
+                # Get the last day's metrics for each fly
+                fly_last_day = fly_status.groupby(['monitor', 'channel']).last().reset_index()
+                
+                # Create fly_id in fly_last_day for merging
+                fly_last_day['fly_id'] = fly_last_day.apply(
+                    lambda row: f"M{row['monitor']}_Ch{row['channel']:02d}", axis=1
+                )
+                
+                # Merge in the detailed metrics
+                health_db = health_db.merge(
+                    fly_last_day[['fly_id', 'TOTAL_ACTIVITY', 'LONGEST_ZERO', 'REL_ACTIVITY', 
+                                  'NO_STARTLE', 'MISSING_FRAC']],
+                    on='fly_id',
+                    how='left'
+                )
+                
+                # Map to database column names
+                health_db['total_activity'] = health_db['TOTAL_ACTIVITY'] if 'TOTAL_ACTIVITY' in health_db.columns else 0
+                health_db['longest_zero_hours'] = (health_db['LONGEST_ZERO'] / 60.0) if 'LONGEST_ZERO' in health_db.columns else 0.0  # Convert minutes to hours
+                health_db['rel_activity'] = health_db['REL_ACTIVITY'] if 'REL_ACTIVITY' in health_db.columns else np.nan
+                health_db['has_startle_response'] = ~health_db['NO_STARTLE'] if 'NO_STARTLE' in health_db.columns else False  # Invert NO_STARTLE
+                health_db['missing_fraction'] = health_db['MISSING_FRAC'] if 'MISSING_FRAC' in health_db.columns else np.nan
+                
+                # Replace inf/-inf with NaN first, then cap values
+                # DECIMAL(5,3) can only hold values from -99.999 to 99.999
+                # DECIMAL(5,2) can only hold values from -999.99 to 999.99
+                for col in ['rel_activity', 'missing_fraction', 'longest_zero_hours']:
+                    if col in health_db.columns:
+                        # Replace infinity with NaN
+                        health_db[col] = health_db[col].replace([np.inf, -np.inf], np.nan)
+                        # Cap extreme values to fit in database DECIMAL types
+                        if col == 'longest_zero_hours':
+                            # DECIMAL(5,2): -999.99 to 999.99
+                            health_db[col] = health_db[col].clip(lower=0, upper=999.99)
+                        else:
+                            # DECIMAL(5,3): -99.999 to 99.999
+                            health_db[col] = health_db[col].clip(lower=-99.999, upper=99.999)
+            
+            print(f" ✓")
+            
+            # Map additional fields if available - now include all the metric columns
+            health_cols = ['fly_id', 'experiment_id', 'report_date', 'status', 
+                          'total_activity', 'longest_zero_hours', 'rel_activity',
+                          'has_startle_response', 'missing_fraction']
             health_df = health_db[health_cols].copy()
             
             # Ensure report_date is a date object (PostgreSQL expects date type)
@@ -818,28 +870,45 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                     health_df['report_date'] = pd.to_datetime(health_df['report_date']).dt.date
             
             # Use bulk insert with ON CONFLICT to handle duplicates
+            print(f"  Inserting health reports...", end='', flush=True)
             with psycopg2.connect(**DB_CONFIG) as conn:
                 with conn.cursor() as cur:
                     try:
                         # Prepare all data as tuples for bulk insert
-
+                        # Handle None/NaN values properly
                         health_tuples = list(zip(
                             health_df['fly_id'].astype(str).values.tolist(),
                             health_df['experiment_id'].astype(int).values.tolist(),
                             health_df['report_date'].values.tolist(),  # Already date objects, just convert to list
-                            health_df['status'].astype(str).values.tolist()
+                            health_df['status'].astype(str).values.tolist(),
+                            # Convert to Python native types and handle NaN
+                            [None if pd.isna(x) else int(x) for x in health_df['total_activity'].values],
+                            [None if pd.isna(x) else float(x) for x in health_df['longest_zero_hours'].values],
+                            [None if pd.isna(x) else float(x) for x in health_df['rel_activity'].values],
+                            [None if pd.isna(x) else bool(x) for x in health_df['has_startle_response'].values],
+                            [None if pd.isna(x) else float(x) for x in health_df['missing_fraction'].values]
                         ))
                         
                         # Get count before insert
                         cur.execute("SELECT COUNT(*) FROM health_reports WHERE experiment_id = %s", (experiment_id,))
                         count_before = cur.fetchone()[0]
                         
-                        # Single bulk insert operation
+                        # Single bulk insert operation with all columns
                         execute_values(
                             cur,
-                            """INSERT INTO health_reports (fly_id, experiment_id, report_date, status)
+                            """INSERT INTO health_reports 
+                               (fly_id, experiment_id, report_date, status, 
+                                total_activity, longest_zero_hours, rel_activity, 
+                                has_startle_response, missing_fraction)
                                VALUES %s
-                               ON CONFLICT (fly_id, experiment_id, report_date) DO NOTHING""",
+                               ON CONFLICT (fly_id, experiment_id, report_date) 
+                               DO UPDATE SET
+                                   status = EXCLUDED.status,
+                                   total_activity = EXCLUDED.total_activity,
+                                   longest_zero_hours = EXCLUDED.longest_zero_hours,
+                                   rel_activity = EXCLUDED.rel_activity,
+                                   has_startle_response = EXCLUDED.has_startle_response,
+                                   missing_fraction = EXCLUDED.missing_fraction""",
                             health_tuples,
                             template=None,
                             page_size=1000
@@ -851,7 +920,7 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                         
                         inserted_count = count_after - count_before
                         conn.commit()
-                        print(f"  Saved {inserted_count} health reports to database")
+                        print(f" ✓ ({inserted_count} reports)")
                         
                     except psycopg2.Error as e:
                         conn.rollback()
@@ -859,7 +928,7 @@ def save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
                         raise
         
         engine.dispose()
-        print(f"✓ Successfully saved data to database (experiment_id: {experiment_id})")
+        print(f"\n✅ Successfully saved all data to database (experiment_id: {experiment_id})")
     except psycopg2.Error as e:
         # Log database error but continue (allows pipeline to complete even if DB fails)
         print(f"✗ WARNING: Database error saving to database: {e}")
@@ -1056,8 +1125,9 @@ def prepare_data_and_health(
     fly_metadata = parse_details(meta_path)
     
     # Parse monitor files
+    print(f"\n📁 Loading {len(dam_files)} monitor files...")
     time_series_list = []
-    for dam_file in dam_files:
+    for i, dam_file in enumerate(dam_files, 1):
         if not os.path.exists(dam_file):
             sys.exit(1)
         
@@ -1070,32 +1140,42 @@ def prepare_data_and_health(
             # Fallback: extract all digits (old behavior for backward compatibility)
             monitor_num = ''.join(filter(str.isdigit, filename))
         
+        print(f"  [{i}/{len(dam_files)}] Loading {filename}...", end='', flush=True)
         monitor_data = parse_monitor_file(dam_file, monitor_num)
+        print(f" ✓ ({len(monitor_data):,} rows)")
         time_series_list.append(monitor_data)
     
     # Combine time-series data
+    print(f"\n🔄 Combining monitor data...", end='', flush=True)
     time_series_data = pd.concat(time_series_list, ignore_index=True)
     time_series_data = time_series_data.sort_values(['datetime', 'monitor', 'channel', 'reading']).reset_index(drop=True)
+    print(f" ✓ ({len(time_series_data):,} total rows)")
     
     # Merge with metadata
+    print(f"🔄 Merging with metadata...", end='', flush=True)
     dam_merged = time_series_data.merge(fly_metadata, on=['monitor', 'channel'])
+    print(f" ✓")
     
     # Reorder columns
     final_columns = ['datetime', 'monitor', 'channel', 'reading', 'value', 'fly_id', 'genotype', 'sex', 'treatment']
     dam_merged = dam_merged[final_columns]
     
     # STEP 1.2: Calculate time variables
+    print(f"🔄 Calculating time variables...", end='', flush=True)
     dam_merged['date'] = pd.to_datetime(dam_merged['datetime']).dt.date
     dam_merged['time'] = pd.to_datetime(dam_merged['datetime']).dt.strftime('%H:%M:%S')
     
     zt, phase = calculate_zt_phase(dam_merged['datetime'], lights_on)
     dam_merged['zt'] = zt
     dam_merged['phase'] = phase
+    print(f" ✓")
     
     # STEP 1.3: Optional date filtering
+    print(f"🔄 Applying date filters...", end='', flush=True)
     dam_merged, actual_exp_start, actual_exp_end = apply_date_filter(
         dam_merged, apply_date_filter_flag, exp_start, exp_end
     )
+    print(f" ✓ ({len(dam_merged):,} rows after filtering)")
     
     # STEP 1.4: Calculate exp_day
     # Ensure actual_exp_start is not None (use minimum date from data if needed)
@@ -1112,6 +1192,7 @@ def prepare_data_and_health(
     # ============================================================
     # PART 2: HEALTH REPORT GENERATION (using in-memory data)
     # ============================================================
+    print(f"\n📊 Generating health report...")
     
     # Update thresholds based on bin_length_min
     thresholds = {
@@ -1125,31 +1206,47 @@ def prepare_data_and_health(
     }
     
     # STEP 2.1: Prepare data for health analysis
+    print(f"  Preparing data for health analysis...", end='', flush=True)
     dam_activity = prep_data_for_health(dam_merged, exclude_days, bin_length_min)
+    print(f" ✓")
     
     # STEP 2.2: Calculate daily metrics
+    print(f"  Calculating daily metrics...", end='', flush=True)
     daily_summary = calculate_daily_metrics(dam_activity, bin_length_min)
+    print(f" ✓")
     
     # STEP 2.3: Normalize to reference day
+    print(f"  Normalizing to reference day {ref_day}...", end='', flush=True)
     daily_summary = normalize_to_ref_day(daily_summary, ref_day, decline_threshold, death_threshold)
+    print(f" ✓")
     
     # STEP 2.4: Startle test
+    print(f"  Running startle test...", end='', flush=True)
     transition_data = startle_test(dam_activity, lights_on, lights_off, transition_window)
+    print(f" ✓")
     
     # STEP 2.5: Classify status
+    print(f"  Classifying fly status...", end='', flush=True)
     fly_status = classify_status(daily_summary, transition_data, thresholds)
+    print(f" ✓")
     
     # STEP 2.6: Apply irreversible death
+    print(f"  Applying irreversible death logic...", end='', flush=True)
     fly_status = apply_irreversible_death(fly_status)
+    print(f" ✓")
     
     # STEP 2.7: Generate summary
+    print(f"  Generating summary...", end='', flush=True)
     health_report = generate_summary(fly_status)
+    print(f" ✓")
     
     # STEP 2.8: Save to database
     experiment_id = None
     if USE_DATABASE and DB_AVAILABLE:
+        print(f"\n💾 Saving to database...")
         try:
             # Create experiment
+            print(f"  Creating experiment...", end='', flush=True)
             experiment_name = f"Experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             experiment_id = create_experiment(
                 name=experiment_name,
@@ -1158,9 +1255,10 @@ def prepare_data_and_health(
                 lights_on=lights_on,
                 lights_off=lights_off
             )
+            print(f" ✓ (ID: {experiment_id})")
             
             if experiment_id:
-                save_to_database(dam_merged, health_report, experiment_id, actual_exp_start)
+                save_to_database(dam_merged, health_report, fly_status, experiment_id, actual_exp_start)
         except psycopg2.Error as e:
             # Raise error if database is required
             raise RuntimeError(f"Database error saving to database: {e}")

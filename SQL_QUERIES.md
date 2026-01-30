@@ -2,6 +2,8 @@
 
 ## List All Experiments
 
+set postgres password
+$env:DB_PASSWORD = "postgres"
 
 # Connect to your database (it will prompt for password)
 psql -U postgres -d fly_ml_db

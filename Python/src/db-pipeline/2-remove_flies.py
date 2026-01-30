@@ -271,6 +271,7 @@ def remove_flies_from_data(
     # ============================================================
     # STEP 1: Load data from database
     # ============================================================
+    print(f"\n📥 Loading data from database...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     sys.path.insert(0, script_dir)
     
@@ -281,33 +282,45 @@ def remove_flies_from_data(
     # Use provided experiment_id, or get latest if not provided
     experiment_id_param = experiment_id
     if experiment_id_param is None:
+        print(f"  Getting latest experiment ID...", end='', flush=True)
         experiment_id = step1.get_latest_experiment_id()
+        print(f" ✓ (ID: {experiment_id})")
     else:
         experiment_id = experiment_id_param
+        print(f"  Using experiment ID: {experiment_id}")
     
     if not experiment_id:
         raise ValueError("No experiment found in database")
     
     # Load data from database
+    print(f"  Loading readings from database (this may take several minutes)...", end='', flush=True)
     df = step1.load_readings_from_db(experiment_id)
     if df is None or len(df) == 0:
         raise ValueError(f"No data found in database for experiment_id {experiment_id}")
+    print(f" ✓ ({len(df):,} rows loaded)")
     
     # ============================================================
     # STEP 2: Load health report from database
     # ============================================================
     health_report = None
     if statuses_to_remove:
+        print(f"\n📊 Loading health report...")
+        print(f"  Loading from database...", end='', flush=True)
         try:
             health_report = step1.load_health_report_from_db(experiment_id)
             if health_report is None or len(health_report) == 0:
-                print("Warning: No health report found in database. Skipping status-based removal.")
+                print(f" ⚠️")
+                print("  Warning: No health report found in database. Skipping status-based removal.")
                 statuses_to_remove = None
+            else:
+                print(f" ✓ ({len(health_report)} reports loaded)")
         except psycopg2.Error as e:
-            print(f"Warning: Database error loading health report: {e}. Skipping status-based removal.")
+            print(f" ❌")
+            print(f"  Warning: Database error loading health report: {e}. Skipping status-based removal.")
             statuses_to_remove = None
         except Exception as e:
-            print(f"Warning: Unexpected error loading health report: {e}. Skipping status-based removal.")
+            print(f" ❌")
+            print(f"  Warning: Unexpected error loading health report: {e}. Skipping status-based removal.")
             statuses_to_remove = None
     
     # ============================================================
@@ -315,11 +328,26 @@ def remove_flies_from_data(
     # ============================================================
     if not any([flies_to_remove, per_fly_remove, genotypes_to_remove, 
                 sexes_to_remove, treatments_to_remove, statuses_to_remove]):
-        pass
+        print(f"\n⚠️  No removal criteria specified. No flies will be removed.")
     
     # ============================================================
     # STEP 4: Remove flies
     # ============================================================
+    print(f"\n🗑️  Removing flies based on criteria...")
+    if statuses_to_remove:
+        print(f"  - By status: {', '.join(statuses_to_remove)}")
+    if flies_to_remove:
+        print(f"  - Specific flies: {len(flies_to_remove)} flies")
+    if genotypes_to_remove:
+        print(f"  - By genotype: {', '.join(genotypes_to_remove)}")
+    if sexes_to_remove:
+        print(f"  - By sex: {', '.join(sexes_to_remove)}")
+    if treatments_to_remove:
+        print(f"  - By treatment: {', '.join(treatments_to_remove)}")
+    if per_fly_remove:
+        print(f"  - Per-fly days: {len(per_fly_remove)} flies")
+    
+    print(f"\n  Processing removals...", end='', flush=True)
     df_cleaned, removals_summary, total_removed = remove_flies(
         df,
         flies_to_remove=flies_to_remove,
@@ -330,18 +358,37 @@ def remove_flies_from_data(
         statuses_to_remove=statuses_to_remove,
         health_report=health_report
     )
+    print(f" ✓")
+    
+    # Print summary
+    print(f"\n📈 Removal Summary:")
+    print(f"  Original rows: {len(df):,}")
+    print(f"  Rows after removal: {len(df_cleaned):,}")
+    print(f"  Total rows removed: {total_removed:,}")
+    print(f"  Flies removed: {removals_summary['flies_removed']}")
+    if removals_summary['rows_removed_by_status'] > 0:
+        print(f"  - By status: {removals_summary['rows_removed_by_status']:,} rows")
+    if removals_summary['rows_removed_by_fly'] > 0:
+        print(f"  - By fly ID: {removals_summary['rows_removed_by_fly']:,} rows")
+    if removals_summary['rows_removed_by_days'] > 0:
+        print(f"  - By specific days: {removals_summary['rows_removed_by_days']:,} rows")
+    if removals_summary['rows_removed_by_metadata'] > 0:
+        print(f"  - By metadata: {removals_summary['rows_removed_by_metadata']:,} rows")
     
     # ============================================================
     # STEP 5: Save cleaned data to database (remove deleted flies)
     # ============================================================
     if USE_DATABASE and DB_AVAILABLE and experiment_id:
+        print(f"\n💾 Updating database...")
         try:
             engine = create_engine(DATABASE_URL)
             
             # Get list of fly_ids that were removed
+            print(f"  Calculating removed fly IDs...", end='', flush=True)
             original_fly_ids = set(df['fly_id'].unique())
             cleaned_fly_ids = set(df_cleaned['fly_id'].unique())
             removed_fly_ids = original_fly_ids - cleaned_fly_ids
+            print(f" ✓ ({len(removed_fly_ids)} flies to remove from database)")
             
             # Delete in correct order to respect foreign key constraints:
             # 1. features_z (references flies)
@@ -350,59 +397,122 @@ def remove_flies_from_data(
             # 4. readings (references flies)
             # 5. flies (last, after all references are removed)
             if removed_fly_ids:
+                print(f"  Deleting from database tables (this may take several minutes)...")
+                
+                # Convert set to list for batching
+                removed_fly_ids_list = list(removed_fly_ids)
+                batch_size = 50  # Process 50 flies at a time to avoid query planning issues
+                total_flies = len(removed_fly_ids_list)
+                
+                # Track totals across all batches
+                total_deleted = {
+                    'features_z': 0,
+                    'features': 0,
+                    'health_reports': 0,
+                    'readings': 0,
+                    'flies': 0
+                }
+                
                 with psycopg2.connect(**DB_CONFIG) as conn:
                     with conn.cursor() as cur:
-                        placeholders = ','.join(['%s'] * len(removed_fly_ids))
+                        # Process in batches
+                        num_batches = (total_flies + batch_size - 1) // batch_size
                         
-                        # Delete from features_z first (if it exists)
-                        try:
+                        for batch_idx in range(num_batches):
+                            start_idx = batch_idx * batch_size
+                            end_idx = min(start_idx + batch_size, total_flies)
+                            batch_fly_ids = removed_fly_ids_list[start_idx:end_idx]
+                            batch_num = batch_idx + 1
+                            
+                            placeholders = ','.join(['%s'] * len(batch_fly_ids))
+                            
+                            # Show batch progress
+                            if num_batches > 1:
+                                print(f"    Batch {batch_num}/{num_batches} ({len(batch_fly_ids)} flies)...")
+                            
+                            # Delete from features_z first (if it exists)
+                            if batch_idx == 0:
+                                print(f"    [1/5] Deleting from features_z...", end='', flush=True)
+                            try:
+                                cur.execute(
+                                    f"DELETE FROM features_z WHERE experiment_id = %s AND fly_id IN ({placeholders})",
+                                    [experiment_id] + batch_fly_ids
+                                )
+                                total_deleted['features_z'] += cur.rowcount
+                                if batch_idx == num_batches - 1:
+                                    print(f" ✓ ({total_deleted['features_z']} rows)")
+                            except psycopg2.ProgrammingError as e:
+                                if batch_idx == 0:
+                                    print(f" ⚠️  (table may not exist yet)")
+                            except psycopg2.Error as e:
+                                if batch_idx == 0:
+                                    print(f" ❌")
+                                    print(f"      Warning: Database error deleting from features_z: {e}")
+                            
+                            # Delete from features
+                            if batch_idx == 0:
+                                print(f"    [2/5] Deleting from features...", end='', flush=True)
+                            try:
+                                cur.execute(
+                                    f"DELETE FROM features WHERE experiment_id = %s AND fly_id IN ({placeholders})",
+                                    [experiment_id] + batch_fly_ids
+                                )
+                                total_deleted['features'] += cur.rowcount
+                                if batch_idx == num_batches - 1:
+                                    print(f" ✓ ({total_deleted['features']} rows)")
+                            except psycopg2.ProgrammingError as e:
+                                if batch_idx == 0:
+                                    print(f" ⚠️  (table may not exist yet)")
+                            except psycopg2.Error as e:
+                                if batch_idx == 0:
+                                    print(f" ❌")
+                                    print(f"      Warning: Database error deleting from features: {e}")
+                            
+                            # Delete from health_reports
+                            if batch_idx == 0:
+                                print(f"    [3/5] Deleting from health_reports...", end='', flush=True)
                             cur.execute(
-                                f"DELETE FROM features_z WHERE experiment_id = %s AND fly_id IN ({placeholders})",
-                                [experiment_id] + list(removed_fly_ids)
+                                f"DELETE FROM health_reports WHERE experiment_id = %s AND fly_id IN ({placeholders})",
+                                [experiment_id] + batch_fly_ids
                             )
-                        except psycopg2.ProgrammingError as e:
-                            # Table might not exist yet
-                            print(f"  Warning: Could not delete from features_z (table may not exist yet): {e}")
-                        except psycopg2.Error as e:
-                            print(f"  Warning: Database error deleting from features_z: {e}")
-                        
-                        # Delete from features
-                        try:
+                            total_deleted['health_reports'] += cur.rowcount
+                            if batch_idx == num_batches - 1:
+                                print(f" ✓ ({total_deleted['health_reports']} rows)")
+                            
+                            # Delete from readings
+                            if batch_idx == 0:
+                                print(f"    [4/5] Deleting from readings (this will take the longest)...", end='', flush=True)
                             cur.execute(
-                                f"DELETE FROM features WHERE experiment_id = %s AND fly_id IN ({placeholders})",
-                                [experiment_id] + list(removed_fly_ids)
+                                f"DELETE FROM readings WHERE experiment_id = %s AND fly_id IN ({placeholders})",
+                                [experiment_id] + batch_fly_ids
                             )
-                        except psycopg2.ProgrammingError as e:
-                            # Table might not exist yet
-                            print(f"  Warning: Could not delete from features (table may not exist yet): {e}")
-                        except psycopg2.Error as e:
-                            print(f"  Warning: Database error deleting from features: {e}")
+                            total_deleted['readings'] += cur.rowcount
+                            if batch_idx == num_batches - 1:
+                                print(f" ✓ ({total_deleted['readings']:,} rows)")
+                            
+                            # Delete from flies (last, after all references are removed)
+                            if batch_idx == 0:
+                                print(f"    [5/5] Deleting from flies...", end='', flush=True)
+                            cur.execute(
+                                f"DELETE FROM flies WHERE experiment_id = %s AND fly_id IN ({placeholders})",
+                                [experiment_id] + batch_fly_ids
+                            )
+                            total_deleted['flies'] += cur.rowcount
+                            if batch_idx == num_batches - 1:
+                                print(f" ✓ ({total_deleted['flies']} rows)")
                         
-                        # Delete from health_reports
-                        cur.execute(
-                            f"DELETE FROM health_reports WHERE experiment_id = %s AND fly_id IN ({placeholders})",
-                            [experiment_id] + list(removed_fly_ids)
-                        )
-                        
-                        # Delete from readings
-                        cur.execute(
-                            f"DELETE FROM readings WHERE experiment_id = %s AND fly_id IN ({placeholders})",
-                            [experiment_id] + list(removed_fly_ids)
-                        )
-                        
-                        # Delete from flies (last, after all references are removed)
-                        cur.execute(
-                            f"DELETE FROM flies WHERE experiment_id = %s AND fly_id IN ({placeholders})",
-                            [experiment_id] + list(removed_fly_ids)
-                        )
-                        
+                        print(f"  Committing transaction...", end='', flush=True)
                         conn.commit()
+                        print(f" ✓")
             
             engine.dispose()
+            print(f"\n✅ Successfully updated database")
         except psycopg2.Error as e:
             raise RuntimeError(f"Database error saving cleaned data to database: {e}")
         except Exception as e:
             raise RuntimeError(f"Unexpected error saving cleaned data to database: {e}")
+    else:
+        print(f"\n⚠️  Database not available or no flies to remove")
     
     return df_cleaned
 
