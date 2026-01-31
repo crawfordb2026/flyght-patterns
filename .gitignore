@@ -5,6 +5,7 @@ Python/data/processed/*.csv
 # Ignore specific files
 zzz.md
 SQL_QUERIES.md
+delete-20percentrule.md
 
 # Ignore monitor directories
 Python/Monitors_raw/

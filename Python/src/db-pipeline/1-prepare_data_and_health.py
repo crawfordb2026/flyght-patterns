@@ -560,22 +560,59 @@ def classify_status(daily_summary, transition_data, thresholds):
     fly_status['FLAG_NO_STARTLE'] = fly_status['NO_STARTLE']
     fly_status['FLAG_MISSING'] = fly_status['MISSING_FRAC'] > thresholds['MISSING_MAX']
     
+    # Track unique flies that died by each rule (using sets)
+    unique_deaths = {'A2': set(), 'A1': set(), 'decline': set()}
+    # Also track fly-days for reference
+    death_fly_days = {'A2': 0, 'A1': 0, 'decline': 0}
+    
     def classify_row(row):
+        # Create unique fly ID
+        fly_id = f"{row.get('monitor', '?')}_{row.get('channel', '?')}"
+        
+        # Step 1: 24+ hours consecutive zero activity
         if row['FLAG_A2']:
+            unique_deaths['A2'].add(fly_id)
+            death_fly_days['A2'] += 1
             return "Dead"
+        
+        # Step 2: 12+ hours zero activity AND no startle response
         if row['FLAG_A1'] and row['FLAG_NO_STARTLE']:
+            unique_deaths['A1'].add(fly_id)
+            death_fly_days['A1'] += 1
             return "Dead"
+        
+        # Step 3: Check if decline WOULD match (but don't mark as Dead)
         if row['DECLINE_STATUS'] == "Dead (by decline)":
-            return "Dead"
+            unique_deaths['decline'].add(fly_id)
+            death_fly_days['decline'] += 1
+            # NOT returning "Dead" here - the rule is commented out!
+        
+        # Step 4: Low activity or excessive sleep AND no startle response
         if (row['FLAG_LOW_ACTIVITY'] or row['FLAG_SLEEP']) and row['FLAG_NO_STARTLE']:
             return "Unhealthy"
-        if row['DECLINE_STATUS'] == "Unhealthy (by decline)":
-            return "Unhealthy"
+        
+        # Step 5: COMMENTED OUT
+        # if row['DECLINE_STATUS'] == "Unhealthy (by decline)":
+        #     return "Unhealthy"
+        
+        # Step 6: Too much missing data (> 10%)
         if row['FLAG_MISSING']:
             return "QC_Fail"
+        
+        # Step 7: Otherwise, fly is alive
         return "Alive"
     
     fly_status['STATUS'] = fly_status.apply(classify_row, axis=1)
+    
+    # Calculate total unique flies that died
+    all_dead_flies = unique_deaths['A2'] | unique_deaths['A1']
+    
+    # Print summary
+    print(f"\n  Death Classification Summary:")
+    print(f"    A2 (24+ hrs zero) → Dead: {len(unique_deaths['A2'])} unique flies")
+    print(f"    A1 (12+ hrs zero + no startle) → Dead: {len(unique_deaths['A1'])} unique flies")
+    print(f"    Total unique flies marked Dead: {len(all_dead_flies)}")
+    
     return fly_status
 
 
@@ -1154,7 +1191,7 @@ def prepare_data_and_health(
     # Merge with metadata
     print(f"🔄 Merging with metadata...", end='', flush=True)
     dam_merged = time_series_data.merge(fly_metadata, on=['monitor', 'channel'])
-    print(f" ✓")
+    print(f" ✓ ({len(dam_merged):,} total rows)")
     
     # Reorder columns
     final_columns = ['datetime', 'monitor', 'channel', 'reading', 'value', 'fly_id', 'genotype', 'sex', 'treatment']
@@ -1168,7 +1205,7 @@ def prepare_data_and_health(
     zt, phase = calculate_zt_phase(dam_merged['datetime'], lights_on)
     dam_merged['zt'] = zt
     dam_merged['phase'] = phase
-    print(f" ✓")
+    print(f" ✓ ({len(dam_merged):,} total rows)")  
     
     # STEP 1.3: Optional date filtering
     print(f"🔄 Applying date filters...", end='', flush=True)
@@ -1216,9 +1253,7 @@ def prepare_data_and_health(
     print(f" ✓")
     
     # STEP 2.3: Normalize to reference day
-    print(f"  Normalizing to reference day {ref_day}...", end='', flush=True)
     daily_summary = normalize_to_ref_day(daily_summary, ref_day, decline_threshold, death_threshold)
-    print(f" ✓")
     
     # STEP 2.4: Startle test
     print(f"  Running startle test...", end='', flush=True)

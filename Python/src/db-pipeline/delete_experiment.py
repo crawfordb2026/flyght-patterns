@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Delete an experiment from the database.
+Delete an experiment (or all experiments) from the database.
 
 This script deletes all data associated with an experiment_id, including:
 - features_z
@@ -11,8 +11,10 @@ This script deletes all data associated with an experiment_id, including:
 - experiments
 
 Usage:
-    python delete_experiment.py --experiment-id 1
-    python delete_experiment.py --experiment-id 1 --confirm
+    python delete_experiment.py --experiment-id 1          # Delete one experiment
+    python delete_experiment.py --experiment-id 1 --confirm # Delete without prompt
+    python delete_experiment.py --experiment-id -1         # Delete ALL experiments
+    python delete_experiment.py --list                     # List all experiments
 """
 
 import argparse
@@ -237,6 +239,57 @@ def list_experiments():
         print(f"Error listing experiments: {e}")
 
 
+def delete_all_experiments(confirm=False):
+    """Delete ALL experiments from the database."""
+    if not USE_DATABASE or not DB_AVAILABLE:
+        print("Error: Database not available")
+        return False
+    
+    try:
+        # Get all experiment IDs
+        with psycopg2.connect(**DB_CONFIG) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT experiment_id, name FROM experiments ORDER BY experiment_id")
+                experiments = cur.fetchall()
+        
+        if not experiments:
+            print("No experiments found in database")
+            return True
+        
+        print(f"\n⚠️  WARNING: You are about to delete ALL {len(experiments)} experiments!")
+        print("\nExperiments to be deleted:")
+        for exp_id, name in experiments:
+            print(f"  - ID {exp_id}: {name}")
+        
+        # Confirm deletion
+        if not confirm:
+            response = input(f"\n⚠️  Type 'DELETE ALL' to confirm deletion of ALL experiments: ")
+            if response != 'DELETE ALL':
+                print("Deletion cancelled")
+                return False
+        
+        print(f"\nDeleting all {len(experiments)} experiments...")
+        
+        # Delete each experiment
+        success_count = 0
+        for exp_id, name in experiments:
+            print(f"\n[{success_count + 1}/{len(experiments)}] Deleting experiment {exp_id}: {name}")
+            if delete_experiment(exp_id, confirm=True):
+                success_count += 1
+            else:
+                print(f"  ⚠️  Failed to delete experiment {exp_id}")
+        
+        print(f"\n{'='*60}")
+        print(f"✅ Successfully deleted {success_count}/{len(experiments)} experiments")
+        print(f"{'='*60}")
+        
+        return success_count == len(experiments)
+        
+    except Exception as e:
+        print(f"Error deleting all experiments: {e}")
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Delete an experiment from the database',
@@ -251,11 +304,17 @@ Examples:
   
   # Delete experiment without confirmation prompt
   python delete_experiment.py --experiment-id 1 --confirm
+  
+  # Delete ALL experiments (will prompt for confirmation)
+  python delete_experiment.py --experiment-id -1
+  
+  # Delete ALL experiments without confirmation prompt
+  python delete_experiment.py --experiment-id -1 --confirm
         """
     )
     
     parser.add_argument('--experiment-id', type=int, default=None,
-                       help='Experiment ID to delete')
+                       help='Experiment ID to delete (use -1 to delete ALL experiments)')
     parser.add_argument('--confirm', action='store_true',
                        help='Skip confirmation prompt (use with caution!)')
     parser.add_argument('--list', action='store_true',
@@ -271,6 +330,11 @@ Examples:
         print("Error: --experiment-id is required (or use --list to see available experiments)")
         parser.print_help()
         return 1
+    
+    # Special case: -1 means delete ALL experiments
+    if args.experiment_id == -1:
+        success = delete_all_experiments(confirm=args.confirm)
+        return 0 if success else 1
     
     success = delete_experiment(args.experiment_id, confirm=args.confirm)
     return 0 if success else 1
