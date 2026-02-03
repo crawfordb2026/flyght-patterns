@@ -646,9 +646,18 @@ def create_feature_table(
                             page_size=1000
                         )
                         
-                        affected_count = cur.rowcount  # Total rows affected (inserted + updated)
                         conn.commit()
-                        print(f"Database save complete: {affected_count} flies saved (inserted or updated)")
+                        
+                        # Verify actual count in database (more reliable than rowcount for bulk operations)
+                        cur.execute("SELECT COUNT(*) FROM features WHERE experiment_id = %s", (experiment_id,))
+                        actual_count = cur.fetchone()[0]
+                        print(f"Database save complete: {actual_count} flies saved (inserted or updated)")
+                        
+                        # Verify all flies were saved
+                        if actual_count != len(ML_features_db):
+                            print(f"⚠️  WARNING: Expected {len(ML_features_db)} flies, but database has {actual_count} flies")
+                        else:
+                            print(f"✓ Verified: All {len(ML_features_db)} flies successfully saved to database")
                         
                     except psycopg2.Error as e:
                         conn.rollback()

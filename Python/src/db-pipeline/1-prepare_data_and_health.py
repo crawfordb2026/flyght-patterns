@@ -101,14 +101,21 @@ def parse_details(filepath):
     df['sex'] = df['Sex']
     df['treatment'] = df['Treatment']
     
-    # Create fly_id: M{monitor}_Ch{channel:02d}
-    df['fly_id'] = df.apply(lambda row: f"M{row['monitor']}_Ch{row['channel']:02d}", axis=1)
+    # Create fly_id: M{monitor}_Ch{channel:02d} (vectorized for performance)
+    df['fly_id'] = 'M' + df['monitor'].astype(str) + '_Ch' + df['channel'].astype(str).str.zfill(2)
     
     # Select and reorder columns
     fly_metadata = df[['monitor', 'channel', 'fly_id', 'genotype', 'sex', 'treatment']].copy()
     
-    # Remove rows with NA values (empty channels)
-    fly_metadata = fly_metadata[fly_metadata['genotype'].apply(is_ok)].copy()
+    # Remove rows with NA values (empty channels) - vectorized
+    # is_ok checks: not NA, not empty, not "na"/"nan"
+    genotype_ok = (
+        fly_metadata['genotype'].notna() & 
+        (fly_metadata['genotype'].astype(str).str.lower() != '') &
+        (fly_metadata['genotype'].astype(str).str.lower() != 'na') &
+        (fly_metadata['genotype'].astype(str).str.lower() != 'nan')
+    )
+    fly_metadata = fly_metadata[genotype_ok].copy()
     
     return fly_metadata
 
@@ -560,49 +567,58 @@ def classify_status(daily_summary, transition_data, thresholds):
     fly_status['FLAG_NO_STARTLE'] = fly_status['NO_STARTLE']
     fly_status['FLAG_MISSING'] = fly_status['MISSING_FRAC'] > thresholds['MISSING_MAX']
     
+    # Create fly_id column (vectorized) for tracking unique deaths
+    fly_status['_fly_id'] = fly_status['monitor'].astype(str) + '_' + fly_status['channel'].astype(str)
+    
+    # Initialize STATUS column with default value
+    fly_status['STATUS'] = 'Alive'
+    
     # Track unique flies that died by each rule (using sets)
     unique_deaths = {'A2': set(), 'A1': set(), 'decline': set()}
     # Also track fly-days for reference
     death_fly_days = {'A2': 0, 'A1': 0, 'decline': 0}
     
-    def classify_row(row):
-        # Create unique fly ID
-        fly_id = f"{row.get('monitor', '?')}_{row.get('channel', '?')}"
-        
-        # Step 1: 24+ hours consecutive zero activity
-        if row['FLAG_A2']:
-            unique_deaths['A2'].add(fly_id)
-            death_fly_days['A2'] += 1
-            return "Dead"
-        
-        # Step 2: 12+ hours zero activity AND no startle response
-        if row['FLAG_A1'] and row['FLAG_NO_STARTLE']:
-            unique_deaths['A1'].add(fly_id)
-            death_fly_days['A1'] += 1
-            return "Dead"
-        
-        # Step 3: Check if decline WOULD match (but don't mark as Dead)
-        if row['DECLINE_STATUS'] == "Dead (by decline)":
-            unique_deaths['decline'].add(fly_id)
-            death_fly_days['decline'] += 1
-            # NOT returning "Dead" here - the rule is commented out!
-        
-        # Step 4: Low activity or excessive sleep AND no startle response
-        if (row['FLAG_LOW_ACTIVITY'] or row['FLAG_SLEEP']) and row['FLAG_NO_STARTLE']:
-            return "Unhealthy"
-        
-        # Step 5: COMMENTED OUT
-        # if row['DECLINE_STATUS'] == "Unhealthy (by decline)":
-        #     return "Unhealthy"
-        
-        # Step 6: Too much missing data (> 10%)
-        if row['FLAG_MISSING']:
-            return "QC_Fail"
-        
-        # Step 7: Otherwise, fly is alive
-        return "Alive"
+    # Step 1: A2 (24+ hours consecutive zero activity) → Dead
+    mask_a2 = fly_status['FLAG_A2']
+    fly_status.loc[mask_a2, 'STATUS'] = 'Dead'
+    unique_deaths['A2'].update(fly_status.loc[mask_a2, '_fly_id'].unique())
+    death_fly_days['A2'] = mask_a2.sum()
     
-    fly_status['STATUS'] = fly_status.apply(classify_row, axis=1)
+    # Step 2: A1 (12+ hours zero activity AND no startle response) → Dead
+    # Only apply if not already marked Dead by A2
+    mask_a1 = fly_status['FLAG_A1'] & fly_status['FLAG_NO_STARTLE'] & ~mask_a2
+    fly_status.loc[mask_a1, 'STATUS'] = 'Dead'
+    unique_deaths['A1'].update(fly_status.loc[mask_a1, '_fly_id'].unique())
+    death_fly_days['A1'] = mask_a1.sum()
+    
+    # Step 3: Check if decline WOULD match (but don't mark as Dead)
+    mask_decline = fly_status['DECLINE_STATUS'] == "Dead (by decline)"
+    unique_deaths['decline'].update(fly_status.loc[mask_decline, '_fly_id'].unique())
+    death_fly_days['decline'] = mask_decline.sum()
+    # NOT marking as Dead here - the rule is commented out!
+    
+    # Step 4: Low activity or excessive sleep AND no startle response → Unhealthy
+    # Only apply if still Alive
+    mask_unhealthy = (
+        (fly_status['FLAG_LOW_ACTIVITY'] | fly_status['FLAG_SLEEP']) & 
+        fly_status['FLAG_NO_STARTLE'] & 
+        (fly_status['STATUS'] == 'Alive')
+    )
+    fly_status.loc[mask_unhealthy, 'STATUS'] = 'Unhealthy'
+    
+    # Step 5: COMMENTED OUT
+    # if row['DECLINE_STATUS'] == "Unhealthy (by decline)":
+    #     return "Unhealthy"
+    
+    # Step 6: Too much missing data (> 10%) → QC_Fail
+    # Only apply if still Alive
+    mask_qc = fly_status['FLAG_MISSING'] & (fly_status['STATUS'] == 'Alive')
+    fly_status.loc[mask_qc, 'STATUS'] = 'QC_Fail'
+    
+    # Step 7: Otherwise, fly is alive (already set as default)
+    
+    # Clean up temporary column
+    fly_status = fly_status.drop(columns=['_fly_id'])
     
     # Calculate total unique flies that died
     all_dead_flies = unique_deaths['A2'] | unique_deaths['A1']
@@ -663,10 +679,22 @@ def generate_summary(fly_status):
         if col not in fly_status.columns:
             raise ValueError(f"Required column '{col}' not found in fly_status. Available columns: {list(fly_status.columns)}")
     
+    # Vectorized filtering (replaces is_ok.apply() for performance)
+    # is_ok checks: not NA, not empty, not "na"/"nan"
+    def vectorized_is_ok(series):
+        """Vectorized version of is_ok function."""
+        series_str = series.astype(str).str.lower()
+        return (
+            series.notna() & 
+            (series_str != '') &
+            (series_str != 'na') &
+            (series_str != 'nan')
+        )
+    
     mask = (
-        fly_status['genotype'].apply(is_ok) &
-        fly_status['sex'].apply(is_ok) &
-        fly_status['treatment'].apply(is_ok)
+        vectorized_is_ok(fly_status['genotype']) &
+        vectorized_is_ok(fly_status['sex']) &
+        vectorized_is_ok(fly_status['treatment'])
     )
     fly_status_clean = fly_status[mask].copy()
     
@@ -839,11 +867,9 @@ def save_to_database(dam_merged, health_report, fly_status, experiment_id, actua
             print(f"  Preparing health report...", end='', flush=True)
             health_db = health_report.copy()
             
-            # Create fly_id if not present
+            # Create fly_id if not present (vectorized for performance)
             if 'fly_id' not in health_db.columns:
-                health_db['fly_id'] = health_db.apply(
-                    lambda row: f"M{row['monitor']}_Ch{row['channel']:02d}", axis=1
-                )
+                health_db['fly_id'] = 'M' + health_db['monitor'].astype(str) + '_Ch' + health_db['channel'].astype(str).str.zfill(2)
             
             # Add experiment_id and map columns
             health_db['experiment_id'] = experiment_id
@@ -856,10 +882,8 @@ def save_to_database(dam_merged, health_report, fly_status, experiment_id, actua
                 # Get the last day's metrics for each fly
                 fly_last_day = fly_status.groupby(['monitor', 'channel']).last().reset_index()
                 
-                # Create fly_id in fly_last_day for merging
-                fly_last_day['fly_id'] = fly_last_day.apply(
-                    lambda row: f"M{row['monitor']}_Ch{row['channel']:02d}", axis=1
-                )
+                # Create fly_id in fly_last_day for merging (vectorized for performance)
+                fly_last_day['fly_id'] = 'M' + fly_last_day['monitor'].astype(str) + '_Ch' + fly_last_day['channel'].astype(str).str.zfill(2)
                 
                 # Merge in the detailed metrics
                 health_db = health_db.merge(

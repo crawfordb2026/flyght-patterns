@@ -13,13 +13,16 @@ This script deletes all data associated with an experiment_id, including:
 Usage:
     python delete_experiment.py --experiment-id 1          # Delete one experiment
     python delete_experiment.py --experiment-id 1 --confirm # Delete without prompt
-    python delete_experiment.py --experiment-id -1         # Delete ALL experiments
+    python delete_experiment.py --all                      # Delete ALL experiments
+    python delete_experiment.py --all --confirm --max-workers 8  # Delete all with 8 threads
     python delete_experiment.py --list                     # List all experiments
 """
 
 import argparse
 import sys
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from threading import Lock
 
 try:
     from config import DB_CONFIG, DATABASE_URL, USE_DATABASE
@@ -31,6 +34,9 @@ except ImportError:
     USE_DATABASE = False
     print("Error: Database modules not available")
     sys.exit(1)
+
+# Thread-safe print lock for progress updates
+print_lock = Lock()
 
 
 def get_experiment_info(experiment_id):
@@ -97,48 +103,67 @@ def count_experiment_data(experiment_id):
         return None
 
 
-def delete_experiment(experiment_id, confirm=False):
-    """Delete an experiment and all associated data."""
+def delete_experiment(experiment_id, confirm=False, show_progress=True, skip_counting=False):
+    """Delete an experiment and all associated data.
+    
+    Args:
+        experiment_id: ID of experiment to delete
+        confirm: If True, skip confirmation prompt
+        show_progress: If True, print progress messages
+        skip_counting: If True, skip counting rows (faster)
+    """
     if not USE_DATABASE or not DB_AVAILABLE:
-        print("Error: Database not available")
+        if show_progress:
+            with print_lock:
+                print("Error: Database not available")
         return False
     
     # Get experiment info
     exp_info = get_experiment_info(experiment_id)
     if exp_info is None:
-        print(f"Error: Experiment {experiment_id} not found")
+        if show_progress:
+            with print_lock:
+                print(f"Error: Experiment {experiment_id} not found")
         return False
     
     exp_id, name, start_date, end_date, created_at = exp_info
     
-    # Count data to be deleted
-    print(f"\nExperiment {exp_id}: {name}")
-    print(f"  Start date: {start_date}")
-    print(f"  End date: {end_date}")
-    print(f"  Created: {created_at}")
+    # Show info and count (if not skipping)
+    if show_progress:
+        with print_lock:
+            print(f"\nExperiment {exp_id}: {name}")
+            print(f"  Start date: {start_date}")
+            print(f"  End date: {end_date}")
+            print(f"  Created: {created_at}")
     
-    counts = count_experiment_data(experiment_id)
-    if counts is None:
-        print("Error: Could not count experiment data")
-        return False
-    
-    print(f"\nData to be deleted:")
-    print(f"  features_z: {counts['features_z']:,} rows")
-    print(f"  features: {counts['features']:,} rows")
-    print(f"  readings: {counts['readings']:,} rows")
-    print(f"  health_reports: {counts['health_reports']:,} rows")
-    print(f"  flies: {counts['flies']:,} rows")
-    print(f"  experiments: 1 row")
-    
-    total_rows = sum(counts.values()) + 1
-    print(f"\nTotal: {total_rows:,} rows will be deleted")
+    if not skip_counting:
+        counts = count_experiment_data(experiment_id)
+        if counts is None:
+            if show_progress:
+                with print_lock:
+                    print("Error: Could not count experiment data")
+            return False
+        
+        if show_progress:
+            with print_lock:
+                print(f"\nData to be deleted:")
+                print(f"  features_z: {counts['features_z']:,} rows")
+                print(f"  features: {counts['features']:,} rows")
+                print(f"  readings: {counts['readings']:,} rows")
+                print(f"  health_reports: {counts['health_reports']:,} rows")
+                print(f"  flies: {counts['flies']:,} rows")
+                print(f"  experiments: 1 row")
+                total_rows = sum(counts.values()) + 1
+                print(f"\nTotal: {total_rows:,} rows will be deleted")
     
     # Confirm deletion
     if not confirm:
         response = input(f"\n⚠️  WARNING: This will permanently delete experiment {exp_id} and all its data.\n"
                         f"Type 'DELETE' to confirm: ")
         if response != 'DELETE':
-            print("Deletion cancelled")
+            if show_progress:
+                with print_lock:
+                    print("Deletion cancelled")
             return False
     
     # Delete in correct order (respecting foreign key constraints)
@@ -148,64 +173,123 @@ def delete_experiment(experiment_id, confirm=False):
                 deleted_counts = {}
                 
                 # 1. Delete features_z (if exists)
+                if show_progress:
+                    with print_lock:
+                        print(f"  Deleting features_z...", end='', flush=True)
                 try:
                     cur.execute("DELETE FROM features_z WHERE experiment_id = %s", (experiment_id,))
                     deleted_counts['features_z'] = cur.rowcount
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ ({deleted_counts['features_z']:,} rows)")
                 except psycopg2.ProgrammingError:
                     deleted_counts['features_z'] = 0  # Table might not exist
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ (table doesn't exist)")
                 
                 # 2. Delete features (if exists)
+                if show_progress:
+                    with print_lock:
+                        print(f"  Deleting features...", end='', flush=True)
                 try:
                     cur.execute("DELETE FROM features WHERE experiment_id = %s", (experiment_id,))
                     deleted_counts['features'] = cur.rowcount
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ ({deleted_counts['features']:,} rows)")
                 except psycopg2.ProgrammingError:
-                    deleted_counts['features'] = 0  # Table might not exist
+                    deleted_counts['features'] = 0
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ (table doesn't exist)")
                 
-                # 3. Delete readings (if exists)
+                # 3. Delete readings (usually the largest table)
+                if show_progress:
+                    with print_lock:
+                        print(f"  Deleting readings...", end='', flush=True)
                 try:
                     cur.execute("DELETE FROM readings WHERE experiment_id = %s", (experiment_id,))
                     deleted_counts['readings'] = cur.rowcount
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ ({deleted_counts['readings']:,} rows)")
                 except psycopg2.ProgrammingError:
-                    deleted_counts['readings'] = 0  # Table might not exist
+                    deleted_counts['readings'] = 0
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ (table doesn't exist)")
                 
-                # 4. Delete health_reports (if exists)
+                # 4. Delete health_reports
+                if show_progress:
+                    with print_lock:
+                        print(f"  Deleting health_reports...", end='', flush=True)
                 try:
                     cur.execute("DELETE FROM health_reports WHERE experiment_id = %s", (experiment_id,))
                     deleted_counts['health_reports'] = cur.rowcount
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ ({deleted_counts['health_reports']:,} rows)")
                 except psycopg2.ProgrammingError:
-                    deleted_counts['health_reports'] = 0  # Table might not exist
+                    deleted_counts['health_reports'] = 0
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ (table doesn't exist)")
                 
-                # 5. Delete flies (if exists)
+                # 5. Delete flies
+                if show_progress:
+                    with print_lock:
+                        print(f"  Deleting flies...", end='', flush=True)
                 try:
                     cur.execute("DELETE FROM flies WHERE experiment_id = %s", (experiment_id,))
                     deleted_counts['flies'] = cur.rowcount
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ ({deleted_counts['flies']:,} rows)")
                 except psycopg2.ProgrammingError:
-                    deleted_counts['flies'] = 0  # Table might not exist
+                    deleted_counts['flies'] = 0
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓ (table doesn't exist)")
                 
                 # 6. Delete experiment (must exist, but handle gracefully)
+                if show_progress:
+                    with print_lock:
+                        print(f"  Deleting experiment record...", end='', flush=True)
                 try:
                     cur.execute("DELETE FROM experiments WHERE experiment_id = %s", (experiment_id,))
                     deleted_counts['experiments'] = cur.rowcount
                     if deleted_counts['experiments'] == 0:
-                        print(f"\n⚠️  Warning: Experiment {experiment_id} not found in experiments table")
+                        if show_progress:
+                            with print_lock:
+                                print(f"\n⚠️  Warning: Experiment {experiment_id} not found in experiments table")
                         return False
+                    if show_progress:
+                        with print_lock:
+                            print(f" ✓")
                 except psycopg2.ProgrammingError:
-                    print(f"\n✗ Error: experiments table does not exist")
+                    if show_progress:
+                        with print_lock:
+                            print(f"\n✗ Error: experiments table does not exist")
                     return False
                 
                 conn.commit()
                 
-                print(f"\n✓ Deletion complete:")
-                for table, count in deleted_counts.items():
-                    print(f"  {table}: {count:,} rows deleted")
+                if show_progress:
+                    with print_lock:
+                        print(f"  ✓ Deletion complete for experiment {exp_id}")
                 
                 return True
                 
     except psycopg2.Error as e:
-        print(f"\n✗ Database error deleting experiment: {e}")
+        if show_progress:
+            with print_lock:
+                print(f"\n✗ Database error deleting experiment {experiment_id}: {e}")
         return False
     except Exception as e:
-        print(f"\n✗ Unexpected error deleting experiment: {e}")
+        if show_progress:
+            with print_lock:
+                print(f"\n✗ Unexpected error deleting experiment {experiment_id}: {e}")
         return False
 
 
@@ -239,8 +323,13 @@ def list_experiments():
         print(f"Error listing experiments: {e}")
 
 
-def delete_all_experiments(confirm=False):
-    """Delete ALL experiments from the database."""
+def delete_all_experiments(confirm=False, max_workers=4):
+    """Delete ALL experiments from the database using multithreading.
+    
+    Args:
+        confirm: If True, skip confirmation prompt
+        max_workers: Number of parallel threads to use (default: 4)
+    """
     if not USE_DATABASE or not DB_AVAILABLE:
         print("Error: Database not available")
         return False
@@ -268,19 +357,56 @@ def delete_all_experiments(confirm=False):
                 print("Deletion cancelled")
                 return False
         
-        print(f"\nDeleting all {len(experiments)} experiments...")
+        print(f"\nDeleting all {len(experiments)} experiments using {max_workers} parallel threads...")
         
-        # Delete each experiment
+        # Use ThreadPoolExecutor for parallel deletion
         success_count = 0
-        for exp_id, name in experiments:
-            print(f"\n[{success_count + 1}/{len(experiments)}] Deleting experiment {exp_id}: {name}")
-            if delete_experiment(exp_id, confirm=True):
-                success_count += 1
-            else:
-                print(f"  ⚠️  Failed to delete experiment {exp_id}")
+        failed_experiments = []
+        completed = 0
         
+        def delete_with_progress(exp_data):
+            """Wrapper function for parallel deletion with progress tracking."""
+            exp_id, name = exp_data
+            try:
+                # Skip counting for speed when deleting all
+                result = delete_experiment(exp_id, confirm=True, show_progress=False, skip_counting=True)
+                return (exp_id, name, result, None)
+            except Exception as e:
+                return (exp_id, name, False, str(e))
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all deletion tasks
+            future_to_exp = {
+                executor.submit(delete_with_progress, (exp_id, name)): (exp_id, name)
+                for exp_id, name in experiments
+            }
+            
+            # Process completed tasks
+            for future in as_completed(future_to_exp):
+                exp_id, name = future_to_exp[future]
+                completed += 1
+                try:
+                    exp_id_result, name_result, success, error = future.result()
+                    if success:
+                        success_count += 1
+                        with print_lock:
+                            print(f"[{completed}/{len(experiments)}] ✓ Deleted experiment {exp_id}: {name}")
+                    else:
+                        failed_experiments.append((exp_id, name, error or "Deletion failed"))
+                        with print_lock:
+                            print(f"[{completed}/{len(experiments)}] ✗ Failed to delete experiment {exp_id}: {name} ({error or 'Unknown error'})")
+                except Exception as e:
+                    failed_experiments.append((exp_id, name, str(e)))
+                    with print_lock:
+                        print(f"[{completed}/{len(experiments)}] ✗ Error deleting experiment {exp_id}: {name} ({e})")
+        
+        # Final summary
         print(f"\n{'='*60}")
         print(f"✅ Successfully deleted {success_count}/{len(experiments)} experiments")
+        if failed_experiments:
+            print(f"⚠️  Failed to delete {len(failed_experiments)} experiments:")
+            for exp_id, name, error in failed_experiments:
+                print(f"  - Experiment {exp_id}: {name} ({error})")
         print(f"{'='*60}")
         
         return success_count == len(experiments)
@@ -306,19 +432,23 @@ Examples:
   python delete_experiment.py --experiment-id 1 --confirm
   
   # Delete ALL experiments (will prompt for confirmation)
-  python delete_experiment.py --experiment-id -1
+  python delete_experiment.py --all
   
-  # Delete ALL experiments without confirmation prompt
-  python delete_experiment.py --experiment-id -1 --confirm
+  # Delete ALL experiments without confirmation prompt (with 8 parallel threads)
+  python delete_experiment.py --all --confirm --max-workers 8
         """
     )
     
     parser.add_argument('--experiment-id', type=int, default=None,
-                       help='Experiment ID to delete (use -1 to delete ALL experiments)')
+                       help='Experiment ID to delete')
+    parser.add_argument('--all', action='store_true',
+                       help='Delete ALL experiments')
     parser.add_argument('--confirm', action='store_true',
                        help='Skip confirmation prompt (use with caution!)')
     parser.add_argument('--list', action='store_true',
                        help='List all experiments in the database')
+    parser.add_argument('--max-workers', type=int, default=4,
+                       help='Number of parallel threads when deleting all experiments (default: 4)')
     
     args = parser.parse_args()
     
@@ -326,15 +456,20 @@ Examples:
         list_experiments()
         return 0
     
-    if args.experiment_id is None:
-        print("Error: --experiment-id is required (or use --list to see available experiments)")
+    # Check for conflicting arguments
+    if args.all and args.experiment_id is not None:
+        print("Error: Cannot use both --all and --experiment-id. Use one or the other.")
         parser.print_help()
         return 1
     
-    # Special case: -1 means delete ALL experiments
-    if args.experiment_id == -1:
-        success = delete_all_experiments(confirm=args.confirm)
+    if args.all:
+        success = delete_all_experiments(confirm=args.confirm, max_workers=args.max_workers)
         return 0 if success else 1
+    
+    if args.experiment_id is None:
+        print("Error: --experiment-id is required (or use --all to delete all, or --list to see available experiments)")
+        parser.print_help()
+        return 1
     
     success = delete_experiment(args.experiment_id, confirm=args.confirm)
     return 0 if success else 1
