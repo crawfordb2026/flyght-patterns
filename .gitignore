@@ -6,6 +6,9 @@ Python/data/processed/*.csv
 zzz.md
 SQL_QUERIES.md
 delete-20percentrule.md
+useful_commands.md
+Python/src/db-pipeline/analysis/generate_results_summary.py
+Python/src/db-pipeline/analysis/RESULTS_SUMMARY.md
 
 # Ignore monitor directories
 Python/Monitors_raw/

@@ -60,6 +60,8 @@ END $$;
 
 CREATE INDEX IF NOT EXISTS idx_readings_fly_datetime ON readings(fly_id, datetime);
 CREATE INDEX IF NOT EXISTS idx_readings_experiment ON readings(experiment_id);
+-- Speeds up FK check when deleting from flies (avoids full scan of readings)
+CREATE INDEX IF NOT EXISTS idx_readings_experiment_fly ON readings(experiment_id, fly_id);
 
 CREATE TABLE IF NOT EXISTS health_reports (
     health_report_id SERIAL PRIMARY KEY,

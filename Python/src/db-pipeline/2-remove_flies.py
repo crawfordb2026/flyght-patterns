@@ -17,6 +17,9 @@ the health report or other criteria. If you skip this step, use the
 prepared data directly in Step 3.
 
 
+Temporary profiling: [TMP] print markers added for bottleneck finding. Remove later by
+searching for "[TMP]" or "TMP" in this file and deleting those lines.
+
 Example command line usage: 
 python 2-remove_flies.py \
   --statuses "Dead,Unhealthy" \
@@ -33,6 +36,7 @@ import os
 import sys
 import json
 import argparse
+import time
 from pathlib import Path
 from importlib import import_module
 
@@ -110,9 +114,11 @@ def remove_flies(
     Returns:
         tuple: (cleaned_df, removals_summary)
     """
+    print(f"[TMP] remove_flies() START", flush=True)
     df = df.copy()
     original_count = len(df)
-    
+    print(f"[TMP] remove_flies() after copy, rows={original_count}", flush=True)
+
     # Create fly key column
     channel_str = df['channel'].astype(str).str.lower()
     channel_str = channel_str.str.replace('^ch', '', regex=True)
@@ -135,6 +141,7 @@ def remove_flies(
     }
     
     # 1. Remove by health status (if health report provided)
+    print(f"[TMP] remove_flies() before status removal block", flush=True)
     if statuses_to_remove and health_report is not None:
         before = len(df)
         # Ensure column names are lowercase (database returns lowercase)
@@ -157,7 +164,8 @@ def remove_flies(
             after = len(df)
             removals_summary['rows_removed_by_status'] = before - after
             removals_summary['flies_removed'] = len(fly_keys_to_remove)
-    
+    print(f"[TMP] remove_flies() after status removal block", flush=True)
+
     # 2. Remove specific flies completely
     if flies_to_remove:
         flies_to_remove_lower = [f.lower() for f in flies_to_remove]
@@ -166,7 +174,8 @@ def remove_flies(
         after = len(df)
         removals_summary['flies_removed'] += len(flies_to_remove)
         removals_summary['rows_removed_by_fly'] = before - after
-    
+    print(f"[TMP] remove_flies() after specific flies block", flush=True)
+
     # 3. Remove specific days for certain flies
     if per_fly_remove:
         if 'exp_day' not in df.columns:
@@ -182,7 +191,8 @@ def remove_flies(
                 df = df[~mask].copy()
             after = len(df)
             removals_summary['rows_removed_by_days'] = before - after
-    
+    print(f"[TMP] remove_flies() after per-fly days block", flush=True)
+
     # 4. Remove by metadata
     before = len(df)
     metadata_mask = pd.Series([True] * len(df), index=df.index)
@@ -205,14 +215,16 @@ def remove_flies(
     df = df[metadata_mask].copy()
     after = len(df)
     removals_summary['rows_removed_by_metadata'] = before - after
-    
+    print(f"[TMP] remove_flies() after metadata block", flush=True)
+
     # Remove helper columns
     columns_to_drop = ['fly_key', 'genotype_lower', 'sex_lower', 'treatment_lower']
     df = df.drop(columns=[col for col in columns_to_drop if col in df.columns])
     
     final_count = len(df)
     total_removed = original_count - final_count
-    
+    print(f"[TMP] remove_flies() END (returning)", flush=True)
+
     return df, removals_summary, total_removed
 
 
@@ -246,10 +258,13 @@ def remove_flies_from_data(
     Returns:
         Cleaned DataFrame
     """
+    _t0 = time.perf_counter()
+    print(f"[TMP] remove_flies_from_data() START (elapsed 0.00s)", flush=True)
+
     # Require database
     if not USE_DATABASE or not DB_AVAILABLE:
         raise RuntimeError("Database is required. Please ensure database is configured and available.")
-    
+
     # Use config values if specified
     if use_config:
         if flies_to_remove is None:
@@ -271,19 +286,24 @@ def remove_flies_from_data(
     # ============================================================
     # STEP 1: Load data from database
     # ============================================================
+    print(f"[TMP] before STEP 1 (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
     print(f"\n📥 Loading data from database...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     sys.path.insert(0, script_dir)
-    
+
     # Import database functions from step 1
+    print(f"[TMP] before import step1 (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
     from importlib import import_module
     step1 = import_module('1-prepare_data_and_health')
+    print(f"[TMP] after import step1 (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
     
     # Use provided experiment_id, or get latest if not provided
     experiment_id_param = experiment_id
     if experiment_id_param is None:
+        print(f"[TMP] before get_latest_experiment_id (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
         print(f"  Getting latest experiment ID...", end='', flush=True)
         experiment_id = step1.get_latest_experiment_id()
+        print(f"[TMP] after get_latest_experiment_id (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
         print(f" ✓ (ID: {experiment_id})")
     else:
         experiment_id = experiment_id_param
@@ -291,105 +311,162 @@ def remove_flies_from_data(
     
     if not experiment_id:
         raise ValueError("No experiment found in database")
-    
-    # Load data from database
-    print(f"  Loading readings from database (this may take several minutes)...", end='', flush=True)
-    df = step1.load_readings_from_db(experiment_id)
-    if df is None or len(df) == 0:
-        raise ValueError(f"No data found in database for experiment_id {experiment_id}")
-    print(f" ✓ ({len(df):,} rows loaded)")
-    
-    # ============================================================
-    # STEP 2: Load health report from database
-    # ============================================================
-    health_report = None
-    if statuses_to_remove:
-        print(f"\n📊 Loading health report...")
+
+    # Fast path: when only removing by health status, we need only the health report
+    # (skip loading 33M+ readings and in-memory removal — saves ~3–4 minutes).
+    status_only = bool(
+        statuses_to_remove
+        and not flies_to_remove
+        and not per_fly_remove
+        and not genotypes_to_remove
+        and not sexes_to_remove
+        and not treatments_to_remove
+    )
+    precomputed_removed_fly_ids = None
+    df = None
+    df_cleaned = None
+    removals_summary = {
+        'flies_removed': 0,
+        'rows_removed_by_fly': 0,
+        'rows_removed_by_days': 0,
+        'rows_removed_by_metadata': 0,
+        'rows_removed_by_status': 0
+    }
+    total_removed = None
+
+    if status_only:
+        print(f"[TMP] status-only fast path: loading health report only (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+        print(f"\n📊 Loading health report (status-only removal, skipping full readings load)...")
         print(f"  Loading from database...", end='', flush=True)
         try:
-            health_report = step1.load_health_report_from_db(experiment_id)
-            if health_report is None or len(health_report) == 0:
+            health_report_fast = step1.load_health_report_from_db(experiment_id)
+            print(f"[TMP] after load_health_report_from_db fast path (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+            if health_report_fast is None or len(health_report_fast) == 0:
                 print(f" ⚠️")
-                print("  Warning: No health report found in database. Skipping status-based removal.")
-                statuses_to_remove = None
+                print("  Warning: No health report found. Falling back to full pipeline.")
+                status_only = False
             else:
-                print(f" ✓ ({len(health_report)} reports loaded)")
-        except psycopg2.Error as e:
-            print(f" ❌")
-            print(f"  Warning: Database error loading health report: {e}. Skipping status-based removal.")
-            statuses_to_remove = None
+                health_report_fast.columns = [c.lower() if isinstance(c, str) else c for c in health_report_fast.columns]
+                if 'final_status' not in health_report_fast.columns:
+                    status_only = False
+                else:
+                    removed = health_report_fast[health_report_fast['final_status'].isin(statuses_to_remove)]
+                    precomputed_removed_fly_ids = set(removed['fly_id'].unique().tolist())
+                    removals_summary['flies_removed'] = len(precomputed_removed_fly_ids)
+                    removals_summary['rows_removed_by_status'] = None  # not computed in fast path
+                    print(f" ✓ ({len(health_report_fast)} reports, {len(precomputed_removed_fly_ids)} flies to remove by status)")
         except Exception as e:
             print(f" ❌")
-            print(f"  Warning: Unexpected error loading health report: {e}. Skipping status-based removal.")
-            statuses_to_remove = None
-    
-    # ============================================================
-    # STEP 3: Check if any removal criteria specified
-    # ============================================================
-    if not any([flies_to_remove, per_fly_remove, genotypes_to_remove, 
-                sexes_to_remove, treatments_to_remove, statuses_to_remove]):
-        print(f"\n⚠️  No removal criteria specified. No flies will be removed.")
-    
-    # ============================================================
-    # STEP 4: Remove flies
-    # ============================================================
-    print(f"\n🗑️  Removing flies based on criteria...")
-    if statuses_to_remove:
-        print(f"  - By status: {', '.join(statuses_to_remove)}")
-    if flies_to_remove:
-        print(f"  - Specific flies: {len(flies_to_remove)} flies")
-    if genotypes_to_remove:
-        print(f"  - By genotype: {', '.join(genotypes_to_remove)}")
-    if sexes_to_remove:
-        print(f"  - By sex: {', '.join(sexes_to_remove)}")
-    if treatments_to_remove:
-        print(f"  - By treatment: {', '.join(treatments_to_remove)}")
-    if per_fly_remove:
-        print(f"  - Per-fly days: {len(per_fly_remove)} flies")
-    
-    print(f"\n  Processing removals...", end='', flush=True)
-    df_cleaned, removals_summary, total_removed = remove_flies(
-        df,
-        flies_to_remove=flies_to_remove,
-        per_fly_remove=per_fly_remove,
-        genotypes_to_remove=genotypes_to_remove,
-        sexes_to_remove=sexes_to_remove,
-        treatments_to_remove=treatments_to_remove,
-        statuses_to_remove=statuses_to_remove,
-        health_report=health_report
-    )
-    print(f" ✓")
-    
+            print(f"  Warning: {e}. Falling back to full pipeline.")
+            status_only = False
+
+    if not status_only:
+        # Load data from database
+        print(f"[TMP] before load_readings_from_db (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+        print(f"\n📥 Loading data from database...")
+        print(f"  Loading readings from database (this may take several minutes)...", end='', flush=True)
+        df = step1.load_readings_from_db(experiment_id)
+        print(f"[TMP] after load_readings_from_db (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+        if df is None or len(df) == 0:
+            raise ValueError(f"No data found in database for experiment_id {experiment_id}")
+        print(f" ✓ ({len(df):,} rows loaded)")
+
+        # STEP 2: Load health report from database (when not status-only)
+        health_report = None
+        if statuses_to_remove:
+            print(f"[TMP] before load_health_report_from_db (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+            print(f"\n📊 Loading health report...")
+            print(f"  Loading from database...", end='', flush=True)
+            try:
+                health_report = step1.load_health_report_from_db(experiment_id)
+                print(f"[TMP] after load_health_report_from_db (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+                if health_report is None or len(health_report) == 0:
+                    print(f" ⚠️")
+                    print("  Warning: No health report found in database. Skipping status-based removal.")
+                    statuses_to_remove = None
+                else:
+                    print(f" ✓ ({len(health_report)} reports loaded)")
+            except psycopg2.Error as e:
+                print(f" ❌")
+                print(f"  Warning: Database error loading health report: {e}. Skipping status-based removal.")
+                statuses_to_remove = None
+            except Exception as e:
+                print(f" ❌")
+                print(f"  Warning: Unexpected error loading health report: {e}. Skipping status-based removal.")
+                statuses_to_remove = None
+
+        if not any([flies_to_remove, per_fly_remove, genotypes_to_remove,
+                    sexes_to_remove, treatments_to_remove, statuses_to_remove]):
+            print(f"\n⚠️  No removal criteria specified. No flies will be removed.")
+
+        print(f"\n🗑️  Removing flies based on criteria...")
+        if statuses_to_remove:
+            print(f"  - By status: {', '.join(statuses_to_remove)}")
+        if flies_to_remove:
+            print(f"  - Specific flies: {len(flies_to_remove)} flies")
+        if genotypes_to_remove:
+            print(f"  - By genotype: {', '.join(genotypes_to_remove)}")
+        if sexes_to_remove:
+            print(f"  - By sex: {', '.join(sexes_to_remove)}")
+        if treatments_to_remove:
+            print(f"  - By treatment: {', '.join(treatments_to_remove)}")
+        if per_fly_remove:
+            print(f"  - Per-fly days: {len(per_fly_remove)} flies")
+
+        print(f"[TMP] before remove_flies() call (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+        print(f"\n  Processing removals...", end='', flush=True)
+        df_cleaned, removals_summary, total_removed = remove_flies(
+            df,
+            flies_to_remove=flies_to_remove,
+            per_fly_remove=per_fly_remove,
+            genotypes_to_remove=genotypes_to_remove,
+            sexes_to_remove=sexes_to_remove,
+            treatments_to_remove=treatments_to_remove,
+            statuses_to_remove=statuses_to_remove,
+            health_report=health_report
+        )
+        print(f"[TMP] after remove_flies() call (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+        print(f" ✓")
+
     # Print summary
     print(f"\n📈 Removal Summary:")
-    print(f"  Original rows: {len(df):,}")
-    print(f"  Rows after removal: {len(df_cleaned):,}")
-    print(f"  Total rows removed: {total_removed:,}")
+    if df is not None and df_cleaned is not None:
+        print(f"  Original rows: {len(df):,}")
+        print(f"  Rows after removal: {len(df_cleaned):,}")
+        print(f"  Total rows removed: {total_removed:,}")
+    else:
+        print(f"  (status-only path: row counts not loaded)")
     print(f"  Flies removed: {removals_summary['flies_removed']}")
-    if removals_summary['rows_removed_by_status'] > 0:
+    if removals_summary.get('rows_removed_by_status') and removals_summary['rows_removed_by_status'] > 0:
         print(f"  - By status: {removals_summary['rows_removed_by_status']:,} rows")
-    if removals_summary['rows_removed_by_fly'] > 0:
+    if removals_summary.get('rows_removed_by_fly', 0) > 0:
         print(f"  - By fly ID: {removals_summary['rows_removed_by_fly']:,} rows")
-    if removals_summary['rows_removed_by_days'] > 0:
+    if removals_summary.get('rows_removed_by_days', 0) > 0:
         print(f"  - By specific days: {removals_summary['rows_removed_by_days']:,} rows")
-    if removals_summary['rows_removed_by_metadata'] > 0:
+    if removals_summary.get('rows_removed_by_metadata', 0) > 0:
         print(f"  - By metadata: {removals_summary['rows_removed_by_metadata']:,} rows")
-    
+
     # ============================================================
     # STEP 5: Save cleaned data to database (remove deleted flies)
     # ============================================================
     if USE_DATABASE and DB_AVAILABLE and experiment_id:
+        print(f"[TMP] before DB update section (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
         print(f"\n💾 Updating database...")
         try:
             engine = create_engine(DATABASE_URL)
-            
-            # Get list of fly_ids that were removed
+            print(f"[TMP] after create_engine (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+
+            # Get list of fly_ids that were removed (precomputed in status-only path)
             print(f"  Calculating removed fly IDs...", end='', flush=True)
-            original_fly_ids = set(df['fly_id'].unique())
-            cleaned_fly_ids = set(df_cleaned['fly_id'].unique())
-            removed_fly_ids = original_fly_ids - cleaned_fly_ids
+            if precomputed_removed_fly_ids is not None:
+                removed_fly_ids = precomputed_removed_fly_ids
+            else:
+                original_fly_ids = set(df['fly_id'].unique())
+                cleaned_fly_ids = set(df_cleaned['fly_id'].unique())
+                removed_fly_ids = original_fly_ids - cleaned_fly_ids
+            print(f"[TMP] after calculating removed_fly_ids (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
             print(f" ✓ ({len(removed_fly_ids)} flies to remove from database)")
-            
+
             # Delete in correct order to respect foreign key constraints:
             # 1. features_z (references flies)
             # 2. features (references flies)
@@ -397,8 +474,19 @@ def remove_flies_from_data(
             # 4. readings (references flies)
             # 5. flies (last, after all references are removed)
             if removed_fly_ids:
+                print(f"[TMP] removed_fly_ids non-empty, entering delete loop", flush=True)
+                # Ensure index exists for fast FK check when deleting from flies (helps existing DBs)
+                try:
+                    with psycopg2.connect(**DB_CONFIG) as conn_ix:
+                        with conn_ix.cursor() as cur_ix:
+                            cur_ix.execute(
+                                "CREATE INDEX IF NOT EXISTS idx_readings_experiment_fly ON readings(experiment_id, fly_id)"
+                            )
+                        conn_ix.commit()
+                except psycopg2.Error:
+                    pass  # index may already exist or table may be hypertable; continue
                 print(f"  Deleting from database tables (this may take several minutes)...")
-                
+
                 # Convert set to list for batching
                 removed_fly_ids_list = list(removed_fly_ids)
                 batch_size = 50  # Process 50 flies at a time to avoid query planning issues
@@ -413,12 +501,15 @@ def remove_flies_from_data(
                     'flies': 0
                 }
                 
+                print(f"[TMP] before opening DB connection for deletes (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
                 with psycopg2.connect(**DB_CONFIG) as conn:
                     with conn.cursor() as cur:
                         # Process in batches
                         num_batches = (total_flies + batch_size - 1) // batch_size
-                        
+                        print(f"[TMP] num_batches={num_batches} (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
+
                         for batch_idx in range(num_batches):
+                            _t_batch = time.perf_counter()
                             start_idx = batch_idx * batch_size
                             end_idx = min(start_idx + batch_size, total_flies)
                             batch_fly_ids = removed_fly_ids_list[start_idx:end_idx]
@@ -434,10 +525,13 @@ def remove_flies_from_data(
                             if batch_idx == 0:
                                 print(f"    [1/5] Deleting from features_z...", end='', flush=True)
                             try:
+                                _td = time.perf_counter()
                                 cur.execute(
                                     f"DELETE FROM features_z WHERE experiment_id = %s AND fly_id IN ({placeholders})",
                                     [experiment_id] + batch_fly_ids
                                 )
+                                if batch_idx == 0:
+                                    print(f"[TMP] after DELETE features_z (elapsed {time.perf_counter() - _td:.2f}s for this query)", flush=True)
                                 total_deleted['features_z'] += cur.rowcount
                                 if batch_idx == num_batches - 1:
                                     print(f" ✓ ({total_deleted['features_z']} rows)")
@@ -453,10 +547,13 @@ def remove_flies_from_data(
                             if batch_idx == 0:
                                 print(f"    [2/5] Deleting from features...", end='', flush=True)
                             try:
+                                _td = time.perf_counter()
                                 cur.execute(
                                     f"DELETE FROM features WHERE experiment_id = %s AND fly_id IN ({placeholders})",
                                     [experiment_id] + batch_fly_ids
                                 )
+                                if batch_idx == 0:
+                                    print(f"[TMP] after DELETE features (elapsed {time.perf_counter() - _td:.2f}s for this query)", flush=True)
                                 total_deleted['features'] += cur.rowcount
                                 if batch_idx == num_batches - 1:
                                     print(f" ✓ ({total_deleted['features']} rows)")
@@ -471,10 +568,13 @@ def remove_flies_from_data(
                             # Delete from health_reports
                             if batch_idx == 0:
                                 print(f"    [3/5] Deleting from health_reports...", end='', flush=True)
+                            _td = time.perf_counter()
                             cur.execute(
                                 f"DELETE FROM health_reports WHERE experiment_id = %s AND fly_id IN ({placeholders})",
                                 [experiment_id] + batch_fly_ids
                             )
+                            if batch_idx == 0:
+                                print(f"[TMP] after DELETE health_reports (elapsed {time.perf_counter() - _td:.2f}s for this query)", flush=True)
                             total_deleted['health_reports'] += cur.rowcount
                             if batch_idx == num_batches - 1:
                                 print(f" ✓ ({total_deleted['health_reports']} rows)")
@@ -482,10 +582,13 @@ def remove_flies_from_data(
                             # Delete from readings
                             if batch_idx == 0:
                                 print(f"    [4/5] Deleting from readings (this will take the longest)...", end='', flush=True)
+                            _td = time.perf_counter()
                             cur.execute(
                                 f"DELETE FROM readings WHERE experiment_id = %s AND fly_id IN ({placeholders})",
                                 [experiment_id] + batch_fly_ids
                             )
+                            if batch_idx == 0:
+                                print(f"[TMP] after DELETE readings (elapsed {time.perf_counter() - _td:.2f}s for this query)", flush=True)
                             total_deleted['readings'] += cur.rowcount
                             if batch_idx == num_batches - 1:
                                 print(f" ✓ ({total_deleted['readings']:,} rows)")
@@ -493,19 +596,30 @@ def remove_flies_from_data(
                             # Delete from flies (last, after all references are removed)
                             if batch_idx == 0:
                                 print(f"    [5/5] Deleting from flies...", end='', flush=True)
+                            _td = time.perf_counter()
                             cur.execute(
                                 f"DELETE FROM flies WHERE experiment_id = %s AND fly_id IN ({placeholders})",
                                 [experiment_id] + batch_fly_ids
                             )
+                            if batch_idx == 0:
+                                print(f"[TMP] after DELETE flies (elapsed {time.perf_counter() - _td:.2f}s for this query)", flush=True)
                             total_deleted['flies'] += cur.rowcount
                             if batch_idx == num_batches - 1:
                                 print(f" ✓ ({total_deleted['flies']} rows)")
-                        
+
+                            if batch_idx == 0:
+                                print(f"[TMP] end of batch 0 (batch elapsed {time.perf_counter() - _t_batch:.2f}s)", flush=True)
+                            elif batch_idx < num_batches - 1 and batch_idx % 5 == 0:
+                                print(f"[TMP] end of batch {batch_idx} (batch elapsed {time.perf_counter() - _t_batch:.2f}s)", flush=True)
+
+                        print(f"[TMP] before commit (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
                         print(f"  Committing transaction...", end='', flush=True)
                         conn.commit()
+                        print(f"[TMP] after commit (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
                         print(f" ✓")
             
             engine.dispose()
+            print(f"[TMP] remove_flies_from_data() before return (DB path) (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
             print(f"\n✅ Successfully updated database")
         except psycopg2.Error as e:
             raise RuntimeError(f"Database error saving cleaned data to database: {e}")
@@ -513,7 +627,8 @@ def remove_flies_from_data(
             raise RuntimeError(f"Unexpected error saving cleaned data to database: {e}")
     else:
         print(f"\n⚠️  Database not available or no flies to remove")
-    
+
+    print(f"[TMP] remove_flies_from_data() END return (elapsed {time.perf_counter() - _t0:.2f}s)", flush=True)
     return df_cleaned
 
 
@@ -523,6 +638,7 @@ def remove_flies_from_data(
 
 def main():
     """Main function with command-line argument parsing."""
+    print(f"[TMP] main() START", flush=True)
     parser = argparse.ArgumentParser(
         description='Pipeline Step 2: Remove flies (optional)',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -593,7 +709,8 @@ Examples:
         args.flies, args.per_fly_remove, args.genotypes, args.sexes,
         args.treatments, args.statuses, args.experiment_id
     ])
-    
+    print(f"[TMP] main() before remove_flies_from_data()", flush=True)
+
     remove_flies_from_data(
         flies_to_remove=flies_to_remove,
         per_fly_remove=per_fly_remove,
@@ -604,6 +721,7 @@ Examples:
         use_config=not has_cli_args,  # Use config if no CLI args provided
         experiment_id=args.experiment_id
     )
+    print(f"[TMP] main() after remove_flies_from_data() (done)", flush=True)
 
 
 if __name__ == '__main__':

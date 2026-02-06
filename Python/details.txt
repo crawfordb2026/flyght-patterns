@@ -8,9 +8,9 @@ Monitor	Channel	Genotype Sex Treatment
 51_06_20_25  ch7 Rye Female VEH
 51_06_20_25  ch8 Rye Female 2mM Arg 
 51_06_20_25  ch9 Rye Female 8mM Arg
-51_06_20_25  ch10 WakeD2 Female VEH
-51_06_20_25  ch11 WakeD2 Female 2mM Arg
-51_06_20_25  ch12 WakeD2 Female 8mM Arg 
+51_06_20_25  ch10 na na na
+51_06_20_25  ch11 na na na
+51_06_20_25  ch12 na na na
 51_06_20_25  ch13 SSS Female VEH
 51_06_20_25  ch14 SSS Female 8mM Arg
 51_06_20_25  ch15 Iso Female VEH
@@ -22,9 +22,9 @@ Monitor	Channel	Genotype Sex Treatment
 51_06_20_25  ch21 Rye Female VEH
 51_06_20_25  ch22 Rye Female 2mM Arg
 51_06_20_25  ch23 Rye Female 8mM Arg 
-51_06_20_25  ch24 WakeD2 Female VEH
-51_06_20_25  ch25 WakeD2 Female 2mM Arg
-51_06_20_25  ch26 WakeD2 Female 8mM Arg
+51_06_20_25  ch24 na na na
+51_06_20_25  ch25 na na na
+51_06_20_25  ch26 na na na
 51_06_20_25  ch27 Iso Female VEH 
 51_06_20_25  ch28 Iso Female 2mM Arg
 51_06_20_25  ch29 Iso Female 8mM Arg
@@ -40,9 +40,9 @@ Monitor	Channel	Genotype Sex Treatment
 52_06_20_25  ch7 Rye Female VEH
 52_06_20_25  ch8 Rye Female 2mM Arg 
 52_06_20_25  ch9 Rye Female 8mM Arg
-52_06_20_25  ch10 WakeD2 Female VEH
-52_06_20_25  ch11 WakeD2 Female 2mM Arg
-52_06_20_25  ch12 WakeD2 Female 8mM Arg 
+52_06_20_25  ch10 na na na
+52_06_20_25  ch11 na na na
+52_06_20_25  ch12 na na na 
 52_06_20_25  ch13 SSS Female VEH
 52_06_20_25  ch14 SSS Female 8mM Arg
 52_06_20_25  ch15 Iso Female VEH
@@ -54,9 +54,9 @@ Monitor	Channel	Genotype Sex Treatment
 52_06_20_25  ch21 Rye Female VEH
 52_06_20_25  ch22 Rye Female 2mM Arg
 52_06_20_25  ch23 Rye Female 8mM Arg 
-52_06_20_25  ch24 WakeD2 Female VEH
-52_06_20_25  ch25 WakeD2 Female 2mM Arg
-52_06_20_25  ch26 WakeD2 Female 8mM Arg
+52_06_20_25  ch24 na na na
+52_06_20_25  ch25 na na na
+52_06_20_25  ch26 na na na
 52_06_20_25  ch27 Iso Female VEH 
 52_06_20_25  ch28 Iso Female 2mM Arg
 52_06_20_25  ch29 Iso Female 8mM Arg
@@ -72,9 +72,9 @@ Monitor	Channel	Genotype Sex Treatment
 53_06_20_25  ch7 Rye Female VEH
 53_06_20_25  ch8 Rye Female 2mM Arg 
 53_06_20_25  ch9 Rye Female 8mM Arg
-53_06_20_25  ch10 WakeD2 Female VEH
-53_06_20_25  ch11 WakeD2 Female 2mM Arg
-53_06_20_25  ch12 WakeD2 Female 8mM Arg 
+53_06_20_25  ch10 na na na
+53_06_20_25  ch11 na na na
+53_06_20_25  ch12 na na na 
 53_06_20_25  ch13 SSS Female VEH
 53_06_20_25  ch14 SSS Female 8mM Arg
 53_06_20_25  ch15 Iso Female VEH
@@ -86,15 +86,15 @@ Monitor	Channel	Genotype Sex Treatment
 53_06_20_25  ch21 Rye Female VEH
 53_06_20_25  ch22 Rye Female 2mM Arg
 53_06_20_25  ch23 Rye Female 8mM Arg 
-53_06_20_25  ch24 WakeD2 Female VEH
-53_06_20_25  ch25 WakeD2 Female 2mM Arg
-53_06_20_25  ch26 WakeD2 Female 8mM Arg
+53_06_20_25  ch24 na na na
+53_06_20_25  ch25 na na na
+53_06_20_25  ch26 na na na
 53_06_20_25  ch27 Rye Female VEH
 53_06_20_25  ch28 Rye Female 2mM Arg
 53_06_20_25  ch29 Rye Female 8mM Arg
-53_06_20_25  ch30 WakeD2 Female VEH
-53_06_20_25  ch31 WakeD2 Female 2mM Arg
-53_06_20_25  ch32 WakeD2 Female 8mM Arg
+53_06_20_25  ch30 na na na
+53_06_20_25  ch31 na na na
+53_06_20_25  ch32 na na na
 54_06_20_25  ch1 Iso Female VEH 
 54_06_20_25  ch2 Iso Female 2mM Arg
 54_06_20_25  ch3 Iso Female 8mM Arg  
@@ -104,9 +104,9 @@ Monitor	Channel	Genotype Sex Treatment
 54_06_20_25  ch7 Rye Female VEH
 54_06_20_25  ch8 Rye Female 2mM Arg 
 54_06_20_25  ch9 Rye Female 8mM Arg
-54_06_20_25  ch10 WakeD2 Female VEH
-54_06_20_25  ch11 WakeD2 Female 2mM Arg
-54_06_20_25  ch12 WakeD2 Female 8mM Arg 
+54_06_20_25  ch10 na na na
+54_06_20_25  ch11 na na na
+54_06_20_25  ch12 na na na 
 54_06_20_25  ch13 SSS Female VEH
 54_06_20_25  ch14 SSS Female 8mM Arg
 54_06_20_25  ch15 Iso Female VEH
@@ -118,15 +118,15 @@ Monitor	Channel	Genotype Sex Treatment
 54_06_20_25  ch21 Rye Female VEH
 54_06_20_25  ch22 Rye Female 2mM Arg
 54_06_20_25  ch23 Rye Female 8mM Arg 
-54_06_20_25  ch24 WakeD2 Female VEH
-54_06_20_25  ch25 WakeD2 Female 2mM Arg
-54_06_20_25  ch26 WakeD2 Female 8mM Arg
+54_06_20_25  ch24 na na na
+54_06_20_25  ch25 na na na
+54_06_20_25  ch26 na na na
 54_06_20_25  ch27 Rye Female VEH
 54_06_20_25  ch28 Rye Female 2mM Arg
 54_06_20_25  ch29 Rye Female 8mM Arg
-54_06_20_25  ch30 WakeD2 Female VEH
-54_06_20_25  ch31 WakeD2 Female 2mM Arg
-54_06_20_25  ch32 WakeD2 Female 8mM Arg
+54_06_20_25  ch30 na na na
+54_06_20_25  ch31 na na na
+54_06_20_25  ch32 na na na
 55_06_20_25  ch1 Iso Male VEH 
 55_06_20_25  ch2 Iso Male 2mM Arg
 55_06_20_25  ch3 Iso Male 8mM Arg  
@@ -136,9 +136,9 @@ Monitor	Channel	Genotype Sex Treatment
 55_06_20_25  ch7 Rye Male VEH
 55_06_20_25  ch8 Rye Male 2mM Arg 
 55_06_20_25  ch9 Rye Male 8mM Arg
-55_06_20_25  ch10 WakeD2 Male VEH
-55_06_20_25  ch11 WakeD2 Male 2mM Arg
-55_06_20_25  ch12 WakeD2 Male 8mM Arg 
+55_06_20_25  ch10 na na na
+55_06_20_25  ch11 na na na
+55_06_20_25  ch12 na na na
 55_06_20_25  ch13 SSS Male VEH
 55_06_20_25  ch14 SSS Male 8mM Arg
 55_06_20_25  ch15 Iso Male VEH
@@ -150,10 +150,9 @@ Monitor	Channel	Genotype Sex Treatment
 55_06_20_25  ch21 Rye Male VEH
 55_06_20_25  ch22 Rye Male 2mM Arg
 55_06_20_25  ch23 Rye Male 8mM Arg 
-55_06_20_25  ch24 WakeD2 Male VEH
-55_06_20_25  ch25 WakeD2 Male 2mM Arg
-55_06_20_25  ch26 WakeD2 Male 8mM Arg
-55_06_20_25  ch27 Iso Male VEH 
+55_06_20_25  ch24 na na na
+55_06_20_25  ch25 na na na
+55_06_20_25  ch26 na na na
 55_06_20_25  ch28 Iso Male 2mM Arg
 55_06_20_25  ch29 Iso Male 8mM Arg
 55_06_20_25  ch30 Fmn Male VEH
@@ -168,9 +167,9 @@ Monitor	Channel	Genotype Sex Treatment
 56_06_20_25  ch7 Rye Male VEH
 56_06_20_25  ch8 Rye Male 2mM Arg 
 56_06_20_25  ch9 Rye Male 8mM Arg
-56_06_20_25  ch10 WakeD2 Male VEH
-56_06_20_25  ch11 WakeD2 Male 2mM Arg
-56_06_20_25  ch12 WakeD2 Male 8mM Arg 
+56_06_20_25  ch10 na na na
+56_06_20_25  ch11 na na na
+56_06_20_25  ch12 na na na 
 56_06_20_25  ch13 SSS Male VEH
 56_06_20_25  ch14 SSS Male 8mM Arg
 56_06_20_25  ch15 Iso Male VEH
@@ -182,9 +181,9 @@ Monitor	Channel	Genotype Sex Treatment
 56_06_20_25  ch21 Rye Male VEH
 56_06_20_25  ch22 Rye Male 2mM Arg
 56_06_20_25  ch23 Rye Male 8mM Arg 
-56_06_20_25  ch24 WakeD2 Male VEH
-56_06_20_25  ch25 WakeD2 Male 2mM Arg
-56_06_20_25  ch26 WakeD2 Male 8mM Arg
+56_06_20_25  ch24 na na na
+56_06_20_25  ch25 na na nag
+56_06_20_25  ch26 na na na
 56_06_20_25  ch27 Iso Male VEH 
 56_06_20_25  ch28 Iso Male 2mM Arg
 56_06_20_25  ch29 Iso Male 8mM Arg
@@ -200,9 +199,9 @@ Monitor	Channel	Genotype Sex Treatment
 57_06_20_25  ch7 Rye Male VEH
 57_06_20_25  ch8 Rye Male 2mM Arg 
 57_06_20_25  ch9 Rye Male 8mM Arg
-57_06_20_25  ch10 WakeD2 Male VEH
-57_06_20_25  ch11 WakeD2 Male 2mM Arg
-57_06_20_25  ch12 WakeD2 Male 8mM Arg 
+57_06_20_25  ch10 na na na
+57_06_20_25  ch11 na na na
+57_06_20_25  ch12 na na na
 57_06_20_25  ch13 SSS Male VEH
 57_06_20_25  ch14 SSS Male 8mM Arg
 57_06_20_25  ch15 Iso Male VEH
@@ -214,15 +213,15 @@ Monitor	Channel	Genotype Sex Treatment
 57_06_20_25  ch21 Rye Male VEH
 57_06_20_25  ch22 Rye Male 2mM Arg
 57_06_20_25  ch23 Rye Male 8mM Arg 
-57_06_20_25  ch24 WakeD2 Male VEH
-57_06_20_25  ch25 WakeD2 Male 2mM Arg
-57_06_20_25  ch26 WakeD2 Male 8mM Arg
+57_06_20_25  ch24 na na na
+57_06_20_25  ch25 na na na
+57_06_20_25  ch26 na na na
 57_06_20_25  ch27 Rye Male VEH
 57_06_20_25  ch28 Rye Male 2mM Arg
 57_06_20_25  ch29 Rye Male 8mM Arg
-57_06_20_25  ch30 WakeD2 Male VEH
-57_06_20_25  ch31 WakeD2 Male 2mM Arg
-57_06_20_25  ch32 WakeD2 Male 8mM Arg
+57_06_20_25  ch30 na na na
+57_06_20_25  ch31 na na na
+57_06_20_25  ch32 na na na
 58_06_20_25  ch1 Iso Male VEH 
 58_06_20_25  ch2 Iso Male 2mM Arg
 58_06_20_25  ch3 Iso Male 8mM Arg  
@@ -232,9 +231,9 @@ Monitor	Channel	Genotype Sex Treatment
 58_06_20_25  ch7 Rye Male VEH
 58_06_20_25  ch8 Rye Male 2mM Arg 
 58_06_20_25  ch9 Rye Male 8mM Arg
-58_06_20_25  ch10 WakeD2 Male VEH
-58_06_20_25  ch11 WakeD2 Male 2mM Arg
-58_06_20_25  ch12 WakeD2 Male 8mM Arg 
+58_06_20_25  ch10 na na na
+58_06_20_25  ch11 na na na
+58_06_20_25  ch12 na na na
 58_06_20_25  ch13 SSS Male VEH
 58_06_20_25  ch14 SSS Male 8mM Arg
 58_06_20_25  ch15 Iso Male VEH
@@ -246,15 +245,15 @@ Monitor	Channel	Genotype Sex Treatment
 58_06_20_25  ch21 Rye Male VEH
 58_06_20_25  ch22 Rye Male 2mM Arg
 58_06_20_25  ch23 Rye Male 8mM Arg 
-58_06_20_25  ch24 WakeD2 Male VEH
-58_06_20_25  ch25 WakeD2 Male 2mM Arg
-58_06_20_25  ch26 WakeD2 Male 8mM Arg
+58_06_20_25  ch24 na na na
+58_06_20_25  ch25 na na na
+58_06_20_25  ch26 na na na
 58_06_20_25  ch27 Rye Male VEH
 58_06_20_25  ch28 Rye Male 2mM Arg
 58_06_20_25  ch29 Rye Male 8mM Arg
-58_06_20_25  ch30 WakeD2 Male VEH
-58_06_20_25  ch31 WakeD2 Male 2mM Arg
-58_06_20_25  ch32 WakeD2 Male 8mM Arg
+58_06_20_25  ch30 na na na
+58_06_20_25  ch31 na na na
+58_06_20_25  ch32 na na na
 5_09_25_25 ch1 SSS Female 2mM His
 5_09_25_25 ch2 SSS Female 8mM His
 5_09_25_25 ch3 SSS Female VEH
