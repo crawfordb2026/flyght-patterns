@@ -2,6 +2,11 @@
 
 > A scalable computational framework for multivariate analysis of *Drosophila* sleep and circadian behavior
 
+[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-336791.svg)](https://www.postgresql.org/)
+[![TimescaleDB](https://img.shields.io/badge/TimescaleDB-2.0+-orange.svg)](https://www.timescale.com/)
+
 ## Overview
 
 Flyght Patterns is an integrated machine learning pipeline for extracting and analyzing behavioral features from Drosophila Activity Monitor (DAM) time-series data. The framework transforms high-dimensional temporal recordings into structured feature sets, enabling multivariate statistical analysis and unsupervised discovery of behavioral phenotypes.
@@ -77,7 +82,8 @@ For other platforms, see the [TimescaleDB installation guide](https://docs.times
 
 ```bash
 # Clone the repository
-git clone https://github.com/crawfordb2026/flyght-patterns
+git clone https://github.com/crawfordb2026/flyght-patterns.git
+cd flyght-patterns
 
 # Create virtual environment (recommended)
 python3 -m venv venv
@@ -362,10 +368,12 @@ flyght-patterns/
 │       │       ├── sexdiff_analysis.py
 │       │       └── random-forest.py
 │       ├── main/                  # Legacy pipeline scripts
-│       ├── pipeline/              # Alternative csv based pipeline implementation
+│       ├── pipeline/              # Alternative pipeline implementation
 │       └── test-scripts/          # Debugging and verification
+├── pipeline.r                     # R implementation
 ├── requirements.txt               # Python dependencies
 ├── db-pipeline.md                 # Detailed pipeline documentation
+├── db-tips.md                     # Database usage tips
 └── README.md                      # This file
 ```
 
@@ -437,9 +445,39 @@ python3 --version  # Should be 3.8+
 pip install --upgrade -r requirements.txt
 ```
 
+## Citation
+
+If you use this pipeline in your research, please cite:
+
+```bibtex
+@article{flyght-patterns2024,
+  title={A Scalable Computational Framework for Multivariate Analysis of Drosophila Sleep and Circadian Behavior},
+  author={[Your Name] and [Co-authors]},
+  journal={[Journal Name]},
+  year={2024},
+  note={In preparation}
+}
+```
+
+## Contributing
+
+We welcome contributions! Please see our contributing guidelines:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Style
+
+- **Python**: Follow PEP 8 guidelines
+- **Documentation**: Use docstrings for all functions
+- **Comments**: Explain the "why", not the "what"
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE] file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
