@@ -12,6 +12,8 @@ scikit-posthocs>=0.7.0  # Required for post-hoc tests (Tukey HSD, Dunn) in pca_a
 # Machine learning
 scikit-learn>=1.0.0  # Required for PCA, LinearRegression, DBSCAN, and NearestNeighbors
 umap-learn>=0.5.0  # Required for UMAP dimensionality reduction in umap_dbscan_analysis.py
+xgboost>=2.0.0  # Death prediction (death_prediction_xgboost.py)
+shap>=0.43.0  # SHAP interpretation for XGBoost (death_prediction_xgboost.py)
 
 # Visualization
 matplotlib>=3.5.0

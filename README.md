@@ -368,12 +368,11 @@ flyght-patterns/
 │       │       ├── sexdiff_analysis.py
 │       │       └── random-forest.py
 │       ├── main/                  # Legacy pipeline scripts
-│       ├── pipeline/              # Alternative pipeline implementation
+│       ├── pipeline/              # Alternative csv based pipeline implementation
 │       └── test-scripts/          # Debugging and verification
-├── pipeline.r                     # R implementation
+├── R/                             # R pipeline (main.r)
 ├── requirements.txt               # Python dependencies
 ├── db-pipeline.md                 # Detailed pipeline documentation
-├── db-tips.md                     # Database usage tips
 └── README.md                      # This file
 ```
 
