@@ -28,9 +28,15 @@ CREATE TABLE IF NOT EXISTS flies (
     genotype VARCHAR(50) NOT NULL,
     sex VARCHAR(20) NOT NULL,
     treatment VARCHAR(100) NOT NULL,
+    death_datetime TIMESTAMP NULL,
+    death_exp_day INT NULL,
     PRIMARY KEY (fly_id, experiment_id),
     UNIQUE(experiment_id, monitor, channel)
 );
+
+-- Add death columns if table already existed (no-op if columns exist)
+ALTER TABLE flies ADD COLUMN IF NOT EXISTS death_datetime TIMESTAMP NULL;
+ALTER TABLE flies ADD COLUMN IF NOT EXISTS death_exp_day INT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_flies_experiment ON flies(experiment_id);
 
@@ -113,6 +119,33 @@ CREATE TABLE IF NOT EXISTS features (
     UNIQUE(fly_id, experiment_id),
     FOREIGN KEY (fly_id, experiment_id) REFERENCES flies(fly_id, experiment_id)
 );
+
+-- Sliding-window features for death prediction (one row per fly per 24h window [9am, 9am))
+CREATE TABLE IF NOT EXISTS features_sliding_window (
+    experiment_id INT NOT NULL REFERENCES experiments(experiment_id),
+    fly_id VARCHAR(50) NOT NULL,
+    window_end_date DATE NOT NULL,
+    exp_day INT,
+    total_activity DECIMAL(12,2),
+    activity_mean DECIMAL(10,4),
+    activity_var DECIMAL(12,4),
+    longest_zero_hours DECIMAL(6,2),
+    total_sleep_min DECIMAL(10,2),
+    total_bouts INT,
+    mean_bout_min DECIMAL(10,2),
+    max_bout_min DECIMAL(10,2),
+    frag_bouts_per_hour DECIMAL(10,4),
+    amplitude_24h DECIMAL(10,4),
+    status VARCHAR(20) NOT NULL,
+    status_raw VARCHAR(20),
+    days_until_death INT NULL,
+    PRIMARY KEY (fly_id, experiment_id, window_end_date),
+    FOREIGN KEY (fly_id, experiment_id) REFERENCES flies(fly_id, experiment_id)
+);
+
+ALTER TABLE features_sliding_window ADD COLUMN IF NOT EXISTS days_until_death INT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_features_sliding_window_experiment ON features_sliding_window(experiment_id);
 
 CREATE TABLE IF NOT EXISTS features_z (
     feature_id SERIAL PRIMARY KEY,
