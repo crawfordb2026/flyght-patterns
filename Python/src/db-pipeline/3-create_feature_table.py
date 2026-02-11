@@ -46,7 +46,7 @@ except ImportError:
 # Feature extraction settings
 DEFAULT_EXCLUDE_DAYS = [1, 7]
 DEFAULT_SLEEP_THRESHOLD_MIN = 5  # minutes of inactivity defining sleep
-DEFAULT_BIN_LENGTH_MIN = 1  # MT resolution in minutes
+DEFAULT_BIN_LENGTH_MIN = 1  # MT resolution in minutes; if DAM files are not 1-min binned, set to bin length
 DEFAULT_PERIOD = 24  # Circadian period in hours
 DEFAULT_LIGHTS_ON = 9  # Hour when lights turn on (ZT0)
 

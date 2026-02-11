@@ -243,7 +243,7 @@ DEFAULT_EXP_START = None  # None = auto-detect from data
 DEFAULT_EXP_END = None    # None = auto-detect from data
 
 # Health report settings
-DEFAULT_BIN_LENGTH_MIN = 1
+DEFAULT_BIN_LENGTH_MIN = 1  # If DAM files are not 1-min binned, set to bin length in minutes
 DEFAULT_EXCLUDE_DAYS = [1, 7]
 DEFAULT_REF_DAY = 4
 DEFAULT_DECLINE_THRESHOLD = 0.5
