@@ -24,6 +24,7 @@ import os
 import sys
 import argparse
 from scipy import stats
+from scipy.signal import lombscargle
 from sklearn.linear_model import LinearRegression
 from pathlib import Path
 from importlib import import_module
@@ -194,6 +195,77 @@ def run_daily_cosinor(hourly_data, period=24):
     })
 
 
+def run_daily_periodogram(hourly_data):
+    """
+    Compute Lomb-Scargle periodogram to detect dominant period and rhythm strength.
+    
+    Args:
+        hourly_data: DataFrame with zt and hourly_MT columns (same format as run_daily_cosinor)
+    
+    Returns:
+        Series with fly_id, exp_day, monitor, channel, periodogram_period, periodogram_power
+        Both periodogram features are np.nan if input contains NaN or insufficient data
+    """
+    df = hourly_data.copy()
+    
+    # Extract zt_hours and activity_hourly values
+    zt_hours = df['zt'].values
+    activity_hourly = df['hourly_MT'].values
+    
+    # Check for NaN values or insufficient data
+    if len(activity_hourly) < 3 or np.isnan(activity_hourly).any() or np.isnan(zt_hours).any():
+        return pd.Series({
+            'fly_id': df['fly_id'].iloc[0] if len(df) > 0 else None,
+            'exp_day': df['exp_day'].iloc[0] if len(df) > 0 else None,
+            'monitor': df['monitor'].iloc[0] if len(df) > 0 and 'monitor' in df.columns else None,
+            'channel': df['channel'].iloc[0] if len(df) > 0 and 'channel' in df.columns else None,
+            'periodogram_period': np.nan,
+            'periodogram_power': np.nan
+        })
+    
+    # Center the data by subtracting the mean
+    y = activity_hourly - np.mean(activity_hourly)
+    
+    # Check for zero variance (constant data) - this causes division by zero in lombscargle
+    if np.var(y) == 0 or np.all(y == 0):
+        return pd.Series({
+            'fly_id': df['fly_id'].iloc[0],
+            'exp_day': df['exp_day'].iloc[0],
+            'monitor': df['monitor'].iloc[0] if 'monitor' in df.columns else None,
+            'channel': df['channel'].iloc[0] if 'channel' in df.columns else None,
+            'periodogram_period': np.nan,
+            'periodogram_power': np.nan
+        })
+    
+    # Convert time to radians over 24h cycle: t = zt_hours * 2π / 24
+    t = zt_hours * 2 * np.pi / 24
+    
+    # Search 1000 evenly-spaced periods from 18 to 30 hours
+    periods = np.linspace(18, 30, 1000)
+    
+    # Convert periods to angular frequencies: freqs = 2π / periods
+    freqs = 2 * np.pi / periods
+    
+    # Compute Lomb-Scargle periodogram with normalization
+    power = lombscargle(t, y, freqs, normalize=True)
+    
+    # Find index of maximum power
+    max_power_idx = np.argmax(power)
+    
+    # Return period at max power and normalized power value
+    periodogram_period = periods[max_power_idx]
+    periodogram_power = power[max_power_idx]
+    
+    return pd.Series({
+        'fly_id': df['fly_id'].iloc[0],
+        'exp_day': df['exp_day'].iloc[0],
+        'monitor': df['monitor'].iloc[0] if 'monitor' in df.columns else None,
+        'channel': df['channel'].iloc[0] if 'channel' in df.columns else None,
+        'periodogram_period': periodogram_period,
+        'periodogram_power': periodogram_power
+    })
+
+
 def compute_rhythm_features(dam_clean, exclude_days, period):
     """Compute per-fly rhythm features (daily cosinor, then aggregate)."""
     # Prepare data
@@ -202,22 +274,33 @@ def compute_rhythm_features(dam_clean, exclude_days, period):
     # Calculate hourly totals
     hourly_day = calculate_hourly_totals(dam_rhythm)
     
-    # Run daily cosinor for each fly-day
+    # Run daily cosinor and periodogram for each fly-day
     daily_cosinor_list = []
+    daily_periodogram_list = []
     
     for (fly_id, exp_day), group in hourly_day.groupby(['fly_id', 'exp_day']):
-        result = run_daily_cosinor(group, period)
-        daily_cosinor_list.append(result)
+        cosinor_result = run_daily_cosinor(group, period)
+        periodogram_result = run_daily_periodogram(group)
+        daily_cosinor_list.append(cosinor_result)
+        daily_periodogram_list.append(periodogram_result)
     
     daily_cosinor = pd.DataFrame(daily_cosinor_list)
+    daily_periodogram = pd.DataFrame(daily_periodogram_list)
     
     # Get metadata (preserve monitor and channel)
     metadata = dam_rhythm[['fly_id', 'monitor', 'channel', 'genotype', 'sex', 'treatment']].drop_duplicates()
     
+    # Merge cosinor and periodogram results
+    daily_features = daily_cosinor.merge(
+        daily_periodogram[['fly_id', 'exp_day', 'periodogram_period', 'periodogram_power']],
+        on=['fly_id', 'exp_day'],
+        how='left'
+    )
+    
     # Merge metadata - ensure monitor/channel are present (from Series or metadata)
-    if 'monitor' in daily_cosinor.columns and 'channel' in daily_cosinor.columns:
+    if 'monitor' in daily_features.columns and 'channel' in daily_features.columns:
         # Monitor/channel already present from Series, just merge other metadata
-        daily_features = daily_cosinor.merge(metadata[['fly_id', 'genotype', 'sex', 'treatment']], on='fly_id', how='left')
+        daily_features = daily_features.merge(metadata[['fly_id', 'genotype', 'sex', 'treatment']], on='fly_id', how='left')
         # Fill any missing monitor/channel values from metadata
         if daily_features['monitor'].isna().any() or daily_features['channel'].isna().any():
             monitor_channel = metadata[['fly_id', 'monitor', 'channel']]
@@ -225,7 +308,7 @@ def compute_rhythm_features(dam_clean, exclude_days, period):
             daily_features = daily_features.merge(monitor_channel, on='fly_id', how='left')
     else:
         # Monitor/channel missing, merge full metadata
-        daily_features = daily_cosinor.merge(metadata, on='fly_id', how='left')
+        daily_features = daily_features.merge(metadata, on='fly_id', how='left')
     
     # Aggregate to per-fly means and SDs
     cosinor_features = daily_features.groupby('fly_id').agg({
@@ -237,14 +320,17 @@ def compute_rhythm_features(dam_clean, exclude_days, period):
         'Mesor': ['mean', 'std'],
         'Amp': ['mean', 'std'],
         'phase': ['mean', 'std'],
-        'Cos_p': lambda x: (x < 0.05).sum()  # rhythmic_days
+        'Cos_p': lambda x: (x < 0.05).sum(),  # rhythmic_days
+        'periodogram_period': ['mean', 'std'],
+        'periodogram_power': 'mean'
     }).reset_index()
     
     # Flatten column names (all lowercase)
     cosinor_features.columns = [
         'fly_id', 'monitor', 'channel', 'genotype', 'sex', 'treatment',
         'mesor_mean', 'mesor_sd', 'amplitude_mean', 'amplitude_sd',
-        'phase_mean', 'phase_sd', 'rhythmic_days'
+        'phase_mean', 'phase_sd', 'rhythmic_days',
+        'periodogram_period_mean', 'periodogram_period_sd', 'periodogram_power_mean'
     ]
     
     return cosinor_features
@@ -576,13 +662,14 @@ def _compute_window_features_one(window_df, bin_length_min, sleep_threshold_min,
     Compute features for one 24h window [9am D-1, 9am D).
     window_df: DataFrame with datetime, fly_id, value (MT counts).
     Returns dict with total_activity, activity_mean, activity_var, longest_zero_hours,
-    total_sleep_min, total_bouts, mean_bout_min, max_bout_min, frag_bouts_per_hour, amplitude_24h.
+    total_sleep_min, total_bouts, mean_bout_min, max_bout_min, frag_bouts_per_hour, amplitude_24h,
+    periodogram_period_24h, periodogram_power_24h.
     """
     step1 = import_module('1-prepare_data_and_health')
     vals = window_df['value'].astype(float)
     total_activity = float(vals.sum())
     activity_mean = float(vals.mean()) if len(vals) > 0 else np.nan
-    activity_var = float(vals.var()) if len(vals) > 1 else (0.0 if len(vals) == 1 else np.nan)
+    activity_var = float(vals.var(ddof=0)) if len(vals) > 1 else (0.0 if len(vals) == 1 else np.nan)
     longest_zero_hours = step1.longest_zero_run(vals.values, bin_length_min) / 60.0
 
     # Build slice for sleep: need fly_id, exp_day, movement, zt_num (0..24 for the window)
@@ -600,14 +687,19 @@ def _compute_window_features_one(window_df, bin_length_min, sleep_threshold_min,
     max_bout_min = float(sleep_ser.get('max_bout_min', np.nan))
     frag_bouts_per_hour = float(sleep_ser.get('fragmentation_bouts_per_hour', np.nan))
 
-    # Cosinor on hourly totals for the window
+    # Cosinor and periodogram on hourly totals for the window
     w['zt'] = np.floor(w['zt_num']).clip(0, 23).astype(int)
     hourly = w.groupby(['fly_id', 'exp_day', 'zt'], as_index=False)['value'].sum().rename(columns={'value': 'hourly_MT'})
     if len(hourly) >= 3:
         cos_ser = run_daily_cosinor(hourly, period=24)
         amplitude_24h = float(cos_ser.get('Amp', np.nan))
+        periodogram_ser = run_daily_periodogram(hourly)
+        periodogram_period_24h = float(periodogram_ser.get('periodogram_period', np.nan))
+        periodogram_power_24h = float(periodogram_ser.get('periodogram_power', np.nan))
     else:
         amplitude_24h = np.nan
+        periodogram_period_24h = np.nan
+        periodogram_power_24h = np.nan
 
     return {
         'total_activity': total_activity,
@@ -620,6 +712,8 @@ def _compute_window_features_one(window_df, bin_length_min, sleep_threshold_min,
         'max_bout_min': max_bout_min,
         'frag_bouts_per_hour': frag_bouts_per_hour,
         'amplitude_24h': amplitude_24h,
+        'periodogram_period_24h': periodogram_period_24h,
+        'periodogram_power_24h': periodogram_power_24h,
     }
 
 
@@ -745,7 +839,8 @@ def _save_sliding_window_to_db(df, experiment_id):
         'experiment_id', 'fly_id', 'window_end_date', 'exp_day',
         'total_activity', 'activity_mean', 'activity_var', 'longest_zero_hours',
         'total_sleep_min', 'total_bouts', 'mean_bout_min', 'max_bout_min',
-        'frag_bouts_per_hour', 'amplitude_24h', 'status', 'status_raw', 'days_until_death'
+        'frag_bouts_per_hour', 'amplitude_24h', 'periodogram_period_24h', 'periodogram_power_24h',
+        'status', 'status_raw', 'days_until_death'
     ]
     df_db = df[cols].copy()
     df_db['status_raw'] = df_db['status_raw'].fillna('').astype(str)
@@ -873,6 +968,9 @@ def create_feature_table(
                 'phase_mean': 'phase_mean',
                 'phase_sd': 'phase_sd',
                 'rhythmic_days': 'rhythmic_days',
+                'periodogram_period_mean': 'periodogram_period_mean',
+                'periodogram_period_sd': 'periodogram_period_sd',
+                'periodogram_power_mean': 'periodogram_power_mean',
                 'total_sleep_mean': 'total_sleep_mean',
                 'day_sleep_mean': 'day_sleep_mean',
                 'night_sleep_mean': 'night_sleep_mean',

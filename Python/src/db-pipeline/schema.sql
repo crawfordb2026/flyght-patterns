@@ -97,6 +97,9 @@ CREATE TABLE IF NOT EXISTS features (
     phase_mean DECIMAL(10,3),
     phase_sd DECIMAL(10,3),
     rhythmic_days INT,
+    periodogram_period_mean DECIMAL(10,3),
+    periodogram_period_sd DECIMAL(10,3),
+    periodogram_power_mean DECIMAL(10,6),
     total_sleep_mean DECIMAL(10,2),
     day_sleep_mean DECIMAL(10,2),
     night_sleep_mean DECIMAL(10,2),
@@ -136,6 +139,8 @@ CREATE TABLE IF NOT EXISTS features_sliding_window (
     max_bout_min DECIMAL(10,2),
     frag_bouts_per_hour DECIMAL(10,4),
     amplitude_24h DECIMAL(10,4),
+    periodogram_period_24h DECIMAL(10,3),
+    periodogram_power_24h DECIMAL(10,6),
     status VARCHAR(20) NOT NULL,
     status_raw VARCHAR(20),
     days_until_death INT NULL,
@@ -144,6 +149,20 @@ CREATE TABLE IF NOT EXISTS features_sliding_window (
 );
 
 ALTER TABLE features_sliding_window ADD COLUMN IF NOT EXISTS days_until_death INT NULL;
+
+-- Add periodogram features to features table
+ALTER TABLE features ADD COLUMN IF NOT EXISTS periodogram_period_mean DECIMAL(10,3);
+ALTER TABLE features ADD COLUMN IF NOT EXISTS periodogram_period_sd DECIMAL(10,3);
+ALTER TABLE features ADD COLUMN IF NOT EXISTS periodogram_power_mean DECIMAL(10,6);
+
+-- Add periodogram features to features_z table
+ALTER TABLE features_z ADD COLUMN IF NOT EXISTS periodogram_period_mean_z DECIMAL(10,6);
+ALTER TABLE features_z ADD COLUMN IF NOT EXISTS periodogram_period_sd_z DECIMAL(10,6);
+ALTER TABLE features_z ADD COLUMN IF NOT EXISTS periodogram_power_mean_z DECIMAL(10,6);
+
+-- Add periodogram features to features_sliding_window table
+ALTER TABLE features_sliding_window ADD COLUMN IF NOT EXISTS periodogram_period_24h DECIMAL(10,3);
+ALTER TABLE features_sliding_window ADD COLUMN IF NOT EXISTS periodogram_power_24h DECIMAL(10,6);
 
 CREATE INDEX IF NOT EXISTS idx_features_sliding_window_experiment ON features_sliding_window(experiment_id);
 
@@ -157,6 +176,9 @@ CREATE TABLE IF NOT EXISTS features_z (
     amplitude_sd_z DECIMAL(10,6),
     phase_mean_z DECIMAL(10,6),
     phase_sd_z DECIMAL(10,6),
+    periodogram_period_mean_z DECIMAL(10,6),
+    periodogram_period_sd_z DECIMAL(10,6),
+    periodogram_power_mean_z DECIMAL(10,6),
     total_sleep_mean_z DECIMAL(10,6),
     day_sleep_mean_z DECIMAL(10,6),
     night_sleep_mean_z DECIMAL(10,6),
