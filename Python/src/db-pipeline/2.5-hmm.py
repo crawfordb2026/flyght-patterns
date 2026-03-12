@@ -31,6 +31,7 @@ EXPERIMENT_ID = None        # None = auto-detect latest experiment
 BIN_MINUTES = 5            # aggregate raw minute counts into bins
 N_STATES = 4
 DEATH_THRESHOLD_HOURS = 24  # for evaluation only (matches Step 1)
+DEATH_FILTER_HOURS = 12     # zero stretches >= this excluded from z-score stats
 STATE_NAMES = ['Healthy', 'Declining', 'Critical', 'Dead']
 STATE_COLORS = ['#2ecc71', '#f1c40f', '#e67e22', '#e74c3c']
 N_PLOT = 5                  # example flies to plot
@@ -70,6 +71,17 @@ def load_all_readings(experiment_id):
     return result
 
 
+def load_genotypes(experiment_id):
+    """Returns dict: fly_id -> genotype."""
+    engine = create_engine(DATABASE_URL)
+    df = pd.read_sql(
+        "SELECT fly_id, genotype FROM flies WHERE experiment_id = %(eid)s",
+        engine, params={'eid': experiment_id}
+    )
+    engine.dispose()
+    return dict(zip(df['fly_id'], df['genotype']))
+
+
 # ==================== PREPROCESSING ====================
 def bin_features(mt_raw, pn_raw, bin_min=BIN_MINUTES):
     """Bin into 2 features: MT sum and Pn variance per bin. Returns (n_bins, 2) array."""
@@ -91,6 +103,63 @@ def find_death_boundary(raw, threshold_hours=DEATH_THRESHOLD_HOURS):
     rolling_zeros = cs[th:] - cs[:-th]
     hits = np.where(rolling_zeros == th)[0]
     return int(hits[0]) if len(hits) > 0 else None
+
+
+# ==================== Z-SCORE NORMALIZATION ====================
+def find_death_mask(mt_binned, threshold_hours=DEATH_FILTER_HOURS):
+    """Boolean mask: True for bins that are part of a >= threshold_hours zero stretch."""
+    threshold_bins = threshold_hours * 60 // BIN_MINUTES
+    is_zero = (mt_binned == 0).astype(np.int32)
+    mask = np.zeros(len(mt_binned), dtype=bool)
+    streak_start = None
+    for i in range(len(is_zero)):
+        if is_zero[i]:
+            if streak_start is None:
+                streak_start = i
+        else:
+            if streak_start is not None and (i - streak_start) >= threshold_bins:
+                mask[streak_start:i] = True
+            streak_start = None
+    if streak_start is not None and (len(is_zero) - streak_start) >= threshold_bins:
+        mask[streak_start:] = True
+    return mask
+
+
+def compute_zscore_stats(features, genotypes, fly_ids):
+    """Compute per-genotype mean/std from alive periods only."""
+    geno_data = {}
+    for fid in fly_ids:
+        g = genotypes.get(fid)
+        if g is None:
+            continue
+        feat = features[fid]
+        alive_mask = ~find_death_mask(feat[:, 0])
+        if alive_mask.any():
+            geno_data.setdefault(g, []).append(feat[alive_mask])
+
+    stats = {}
+    for g, arrays in geno_data.items():
+        stacked = np.vstack(arrays)
+        mean = np.mean(stacked, axis=0)
+        std = np.std(stacked, axis=0)
+        std[std < 1e-6] = 1.0  # avoid divide-by-zero
+        stats[g] = (mean, std)
+        print(f'  {g}: mean=[{mean[0]:.1f}, {mean[1]:.2f}]  std=[{std[0]:.1f}, {std[1]:.2f}]  '
+              f'({len(arrays)} flies, {stacked.shape[0]} alive bins)')
+    return stats
+
+
+def apply_zscore(features, genotypes, stats):
+    """Z-score all flies using their genotype's stats. Returns new dict."""
+    normed = {}
+    for fid, feat in features.items():
+        g = genotypes.get(fid)
+        if g is None or g not in stats:
+            normed[fid] = feat  # no genotype info, pass through
+            continue
+        mean, std = stats[g]
+        normed[fid] = (feat - mean) / std
+    return normed
 
 
 # ==================== HMM ====================
@@ -130,7 +199,7 @@ def train_hmm(features_list):
         [mt_var, pn_var],
         [mt_var, pn_var],
         [mt_var, pn_var],
-        [0.1,    0.1],
+        [0.01,   0.01],
     ])
 
     print(f'  Init means:  MT={[f"{m:.1f}" for m in mt_q]}  Pn={[f"{m:.1f}" for m in pn_q]}')
@@ -258,6 +327,14 @@ if __name__ == '__main__':
     dead_ids = [f for f in features if death_bins[f] is not None]
     alive_ids = [f for f in features if death_bins[f] is None]
     print(f'  Dead (by {DEATH_THRESHOLD_HOURS}h rule): {len(dead_ids)}, Alive: {len(alive_ids)}')
+
+    # --- z-score normalize by genotype ---
+    print('\nLoading genotypes...')
+    genotypes = load_genotypes(eid)
+    print(f'Computing z-score stats (excluding {DEATH_FILTER_HOURS}h+ zero stretches)...')
+    zstats = compute_zscore_stats(features, genotypes, list(features.keys()))
+    features = apply_zscore(features, genotypes, zstats)
+    print(f'  Normalized {len(features)} flies')
 
     # --- train / test split (all flies for training, dead flies held out for eval) ---
     all_fly_ids = list(features.keys())
