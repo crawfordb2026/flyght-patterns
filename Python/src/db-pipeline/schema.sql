@@ -201,3 +201,17 @@ CREATE TABLE IF NOT EXISTS features_z (
     UNIQUE(fly_id, experiment_id),
     FOREIGN KEY (fly_id, experiment_id) REFERENCES flies(fly_id, experiment_id)
 );
+
+-- HMM health state sequences (produced by 2.5-hmm.py)
+-- state: 0=Healthy, 1=Declining, 2=Critical, 3=Dead
+CREATE TABLE IF NOT EXISTS hmm_states (
+    experiment_id INT NOT NULL REFERENCES experiments(experiment_id),
+    fly_id VARCHAR(50) NOT NULL,
+    bin_index INT NOT NULL,
+    bin_minutes INT NOT NULL,
+    state INT NOT NULL CHECK (state BETWEEN 0 AND 3),
+    PRIMARY KEY (experiment_id, fly_id, bin_index),
+    FOREIGN KEY (fly_id, experiment_id) REFERENCES flies(fly_id, experiment_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_hmm_states_fly ON hmm_states(fly_id, experiment_id);
