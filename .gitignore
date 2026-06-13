@@ -11,6 +11,9 @@ zOldDetails
 CLAUDE.md
 tips.md
 HOW_TO_USE.md
+Python/src/sql_db_pipeline/2.5-hmm.py
+Python/src/sql_db_pipeline/check_health_status.py
+Python/src/sql_db_pipeline/dump_fly_hmm_bins.py
 
 # Ignore monitor directories
 Python/Monitors_raw/

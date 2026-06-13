@@ -6,159 +6,49 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-336791.svg)](https://www.postgresql.org/)
 
+---
+
 ## Overview
 
 Flyght Patterns is an integrated machine learning pipeline for extracting and analyzing behavioral features from Drosophila Activity Monitor (DAM) time-series data. The framework transforms high-dimensional temporal recordings into structured feature sets, enabling multivariate statistical analysis and unsupervised discovery of behavioral phenotypes.
 
 ### Key Features
 
-- **Automated Feature Extraction**: Computes 25+ circadian rhythm and sleep architecture metrics per individual
-- **Scalable Database Architecture**: PostgreSQL for efficient time-series storage (24M+ data points)
-- **Quality Control**: Automated health classification and dead-fly detection
-- **Multivariate Analysis**: Integrated PCA, UMAP, and DBSCAN clustering workflows
-- **Dual Implementation**: Python (primary) and R pipelines for cross-validation
-- **Reproducible Workflows**: Modular design with independent processing steps
+- **Automated Feature Extraction** — 25+ circadian rhythm and sleep architecture metrics per individual
+- **Quality Control** — automated health classification and dead-fly detection
+- **Dual Pipeline** — CSV-based (no database required) and SQL/PostgreSQL backends
+- **Multivariate Analysis** — integrated PCA, UMAP, DBSCAN clustering, and Random Forest workflows
+- **Death Prediction** — XGBoost on rolling behavioral windows (SQL pipeline)
+- **Reproducible Workflows** — modular design with independent processing steps
 
-## Table of Contents
+---
 
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Pipeline Overview](#pipeline-overview)
-- [Usage](#usage)
-- [Feature Documentation](#feature-documentation)
-- [Analysis Methods](#analysis-methods)
-- [Project Structure](#project-structure)
-- [Citation](#citation)
-- [Contributing](#contributing)
-- [License](#license)
+## Getting Started
 
-## Installation
+**See [`Python/QUICKSTART.md`](Python/QUICKSTART.md)** — a one-page guide that helps you choose between the CSV and SQL pipelines, then points you to the right step-by-step instructions.
 
-### Prerequisites
-
-- **Python**: 3.8 or higher
-- **PostgreSQL**: 13 or higher (only required for sql_db_pipeline)
-- **R**: 4.0+ (optional, for R pipeline)
-
-### Database Setup
-
-#### macOS (Homebrew)
+**Prerequisites:**
+- Python 3.8 or higher
+- PostgreSQL 13+ (SQL pipeline only)
+- R 4.0+ (optional, for R pipeline)
 
 ```bash
-# Install PostgreSQL
-brew install postgresql@16
-
-# Start PostgreSQL service
-brew services start postgresql@16
-```
-
-#### Linux (Ubuntu/Debian)
-
-```bash
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-sudo systemctl start postgresql
-```
-
-For other platforms, see the [PostgreSQL installation guide](https://www.postgresql.org/download/).
-
-### Python Environment
-
-```bash
-# Clone the repository
 git clone https://github.com/crawfordb2026/flyght-patterns.git
 cd flyght-patterns
-
-# Create virtual environment (recommended)
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Database Initialization
-
-```bash
-cd Python/src/sql_db_pipeline
-
-# Create database and schema
-python3 setup_database.py
-
-# Verify setup
-psql -h localhost -U your_username -d fly_ml_db -c "\dt"
-```
-
-## Quick Start
-
-### 1. Prepare Your Data
-
-Place your DAM monitor files and metadata in the appropriate directories:
-
-```
-Python/
-├── Monitors_raw/          # Raw monitor files (Monitor51.txt, Monitor52.txt, etc.)
-├── Monitors_date_filtered/  # Output from Step 0 (optional)
-└── metadata.txt            # Fly metadata (monitor, channel, genotype, sex, treatment)
-```
-
-**Example `metadata.txt` format:**
-
-```
-Monitor  Channel  Genotype    Sex     Treatment
-51       ch01     WT          Male    Control
-51       ch02     WT          Female  Control
-52       ch01     sleep_mut   Male    Control
-```
-
-### 2. Run the Pipeline
-
-```bash
-cd Python/src/sql_db_pipeline
-
-# Optional: Filter by date range first
-python3 0-filter_dates.py --input Monitor51 --load "06/20/25" --days 5 --offset 1
-
-# Step 1: Load data and generate health reports
-python3 1-prepare_data_and_health.py
-
-# Step 2: Remove dead/unhealthy flies (optional)
-python3 2-remove_flies.py --statuses "Dead,Unhealthy"
-
-# Step 3: Extract behavioral features
-python3 3-create_feature_table.py
-
-# Step 4: Clean and normalize features for ML
-python3 4-clean_ml_features.py
-```
-
-### 3. Run Analysis
-
-```bash
-cd analysis/
-
-# PCA analysis
-python3 pca_analysis.py --experiment-id 1
-
-# UMAP + DBSCAN clustering
-python3 umap_dbscan_analysis.py --experiment-id 1
-
-# Sex difference analysis
-python3 sexdiff_analysis.py --experiment-id 1
-
-# Random forest classification
-python3 random-forest.py --experiment-id 1
-```
+---
 
 ## Pipeline Overview
 
 ```mermaid
 graph TD
-    A[Raw Monitor Files<br/>800K rows per file] --> B[Step 0: Date Filter<br/>Optional]
-    B --> C[Step 1: Parse & Health Check<br/>24M readings + health reports]
-    C --> D[Step 2: Remove Flies<br/>Optional quality control]
-    D --> E[Step 3: Feature Extraction<br/>~960 flies × 25 features]
-    E --> F[Step 4: Normalization<br/>Z-scored features]
+    A[Raw Monitor Files\n800K rows per file] --> B[Step 0: Date Filter\nOptional]
+    B --> C[Step 1: Parse and Health Check\n24M readings + health reports]
+    C --> D[Step 2: Remove Flies\nOptional quality control]
+    D --> E[Step 3: Feature Extraction\n~960 flies x 25 features]
+    E --> F[Step 4: Normalization\nZ-scored features]
     F --> G[PCA Analysis]
     F --> H[UMAP + DBSCAN]
     F --> I[Statistical Tests]
@@ -167,291 +57,204 @@ graph TD
 
 ### Processing Steps
 
-| Step | Script | Input | Output | Time |
-|------|--------|-------|--------|------|
-| 0 | `0-filter_dates.py` | Raw monitors | Date-filtered files | ~1-2 min/file |
-| 1 | `1-prepare_data_and_health.py` | Monitor files + metadata | Database: readings, health reports | ~5-15 min |
-| 2 | `2-remove_flies.py` | Database readings | Filtered readings | ~1-2 min |
-| 3 | `3-create_feature_table.py` | Database readings | Database: features table | ~10-15 min |
-| 4 | `4-clean_ml_features.py` | Features table | Database: features_z table | ~1-2 min |
-
-## Usage
-
-### Configuration
-
-Set environment variables for database connection:
-
-```bash
-export DB_HOST=localhost
-export DB_PORT=5432
-export DB_NAME=fly_ml_db
-export DB_USER=your_username
-export DB_PASSWORD=your_password
+```
+Step  Script                          Input                     Output                    Time
+----  ------------------------------  ------------------------  ------------------------  -----------
+0     0-filter_dates.py               Raw monitor files         Date-filtered files       ~1-2 min
+1     1-prepare_data_and_health.py    Monitor files + metadata  Readings + health reports ~5-15 min
+2     2-remove_flies.py               Readings                  Filtered readings         ~1-2 min
+3     3-create_feature_table.py       Readings                  Features table            ~10-15 min
+4     4-clean_ml_features.py          Features table            Z-scored features         ~1-2 min
 ```
 
-Or modify `Python/src/sql_db_pipeline/config.py` directly.
+Steps 0 and 2 are optional. Steps 1, 3, and 4 are required.
 
-### Working with Multiple Experiments
-
-```bash
-# List all experiments
-python3 delete_experiment.py --list
-
-# Run analysis on specific experiment
-python3 3-create_feature_table.py --experiment-id 2
-python3 4-clean_ml_features.py --experiment-id 2
-
-# Delete an experiment (with confirmation)
-python3 delete_experiment.py --experiment-id 1
-```
-
-### Command-Line Options
-
-#### Step 0: Date Filtering
-
-```bash
-python3 0-filter_dates.py \
-  --input Monitor51 \
-  --load "06/20/25" \
-  --days 5 \
-  --offset 1
-```
-
-#### Step 1: Data Preparation
-
-```bash
-python3 1-prepare_data_and_health.py \
-  --lights-on 9 \
-  --lights-off 21 \
-  --ref-day 4 \
-  --exclude-days 1 7
-```
-
-#### Step 2: Fly Removal
-
-```bash
-python3 2-remove_flies.py \
-  --experiment-id 1 \
-  --statuses "Dead,Unhealthy,QC_Fail"
-```
-
-#### Step 3: Feature Extraction
-
-```bash
-python3 3-create_feature_table.py \
-  --experiment-id 1 \
-  --exclude-days 1 7 \
-  --sleep-threshold 5
-```
+---
 
 ## Feature Documentation
 
-### Circadian Rhythm Features (Cosinor Analysis)
+### Circadian Rhythm Features
 
-Extracted via daily cosinor regression: `activity ~ Mesor + A×cos(2πt/24) + B×sin(2πt/24)`
+Extracted via daily cosinor regression: `activity ~ Mesor + A*cos(2*pi*t/24) + B*sin(2*pi*t/24)`
 
-- **Mesor**: Rhythm-adjusted mean activity (baseline level)
-- **Amplitude**: Rhythm strength (half of peak-to-trough difference)
-- **Phase**: Timing of peak activity (acrophase in hours, 0-24)
-- **Rhythmic Days**: Number of days with significant rhythmicity (p < 0.05)
+- **Mesor** — rhythm-adjusted mean activity (baseline level)
+- **Amplitude** — rhythm strength (half of peak-to-trough difference)
+- **Phase** — timing of peak activity (acrophase in hours, 0-24)
+- **Rhythmic Days** — number of days with significant rhythmicity (p < 0.05)
+- **Periodogram Period** — dominant period from Lomb-Scargle analysis (18-30 hr range)
+- **Periodogram Power** — rhythm strength from spectral analysis
+- **Activity Onset/Offset** — sustained threshold crossings marking start/end of daily activity
+- **Interdaily Stability** — consistency of the circadian pattern across days
 
-Each parameter includes mean and standard deviation across experimental days.
+Each parameter reported as mean and SD across experimental days.
 
 ### Sleep Architecture Features
 
-Sleep defined as ≥5 consecutive minutes of inactivity.
+Sleep is defined as 5 or more consecutive minutes of inactivity.
 
-#### Duration Metrics
-- **Total/Day/Night Sleep**: Minutes of sleep in each photoperiod
-- **Sleep Latency**: Time to first sleep episode in dark phase
-- **WASO** (Wake After Sleep Onset): Wake time after initial dark-phase sleep
+**Duration**
+- Total/Day/Night Sleep — minutes of sleep in each photoperiod
+- Sleep Latency — time to first sleep episode in the dark phase
+- WASO (Wake After Sleep Onset) — wake time after initial dark-phase sleep onset
 
-#### Bout Structure
-- **Total/Day/Night Bouts**: Number of sleep episodes
-- **Mean/Max Bout Length**: Average and maximum sleep episode duration
+**Bout Structure**
+- Total/Day/Night Bouts — number of sleep episodes
+- Mean/Max Bout Length — average and maximum sleep episode duration
 
-#### Fragmentation
-- **Bouts per Hour**: Temporal fragmentation of sleep
-- **Bouts per Minute Sleep**: Sleep continuity index
-- **Mean Wake Bout**: Average wake episode duration
+**Fragmentation**
+- Bouts per Hour — temporal fragmentation of sleep
+- Mean Wake Bout — average wake episode duration between sleep bouts
 
-#### Transition Dynamics
-- **P_wake**: Probability of transitioning from sleep to wake
-- **P_doze**: Probability of transitioning from wake to sleep
+**Transition Dynamics**
+- P_wake — probability of transitioning from sleep to wake
+- P_doze — probability of transitioning from wake to sleep
 
 ### Health Status Classification
 
-Automated decision tree classification:
+Each fly is classified daily:
 
-- **Alive**: Passing all quality thresholds
-- **Dead**: ≥24 hrs consecutive inactivity OR ≥12 hrs inactivity + no startle response
-- **Unhealthy**: Low activity or excessive sleep + no startle response
-- **QC_Fail**: >10% missing data
+- **Alive** — passing all quality thresholds
+- **Dead** — 24+ hrs consecutive inactivity, or 12+ hrs inactivity with no startle response
+- **Unhealthy** — low activity or excessive sleep with no startle response
+- **QC_Fail** — more than 10% missing data
+
+---
 
 ## Analysis Methods
 
-### Principal Component Analysis (PCA)
+### PCA — Principal Component Analysis
 
-Linear dimensionality reduction identifying orthogonal components that explain maximum variance in the 25-dimensional feature space.
+Linear dimensionality reduction identifying orthogonal components that explain maximum variance in the 25-dimensional feature space. Outputs PC scores per fly, loadings per feature, and genotype signature heatmaps.
 
-**Output:**
-- PC loadings (feature contributions)
-- Variance explained per component
-- PC scores per individual
-- Biplots for visualization
+### UMAP + DBSCAN — Unsupervised Clustering
 
-### UMAP + DBSCAN
-
-**UMAP** (Uniform Manifold Approximation and Projection): Non-linear dimensionality reduction preserving local neighborhood structure.
-
-**DBSCAN** (Density-Based Spatial Clustering): Identifies dense regions in UMAP space as behavioral clusters; flags outliers as unusual phenotypes.
-
-**Output:**
-- 2D UMAP projections
-- Cluster assignments
-- Outlier detection
-- Cluster characterization by genotype/sex
+**UMAP** (Uniform Manifold Approximation and Projection) performs non-linear dimensionality reduction preserving local neighborhood structure. **HDBSCAN** then identifies dense regions as behavioral clusters and flags outliers as unusual phenotypes.
 
 ### Statistical Testing
 
-- **Multivariate ANOVA**: Testing for genotype and sex effects in multivariate space
-- **Post-hoc tests**: Tukey HSD, Dunn's test for pairwise comparisons
-- **Chi-square tests**: Association between cluster membership and biological variables
+- Multivariate ANOVA for genotype and sex effects
+- Post-hoc Tukey HSD and Dunn's tests for pairwise comparisons
+- Chi-square tests for cluster-genotype association
 
 ### Random Forest Classification
 
-Feature importance ranking and phenotype prediction using ensemble decision trees.
+Ensemble decision trees trained to predict genotype from behavioral features. Outputs feature importances, confusion matrices, and cross-validated accuracy.
 
-**Output:**
-- Feature importance scores
-- Classification accuracy
-- Confusion matrices
-- Cross-validation results
+### Death Prediction (SQL pipeline only)
+
+XGBoost trained on rolling 5-day windows of behavioral features to predict proximity to death. Outputs SHAP feature importances identifying the earliest behavioral signals of decline.
+
+---
 
 ## Project Structure
 
 ```
 flyght-patterns/
-├── Python/
-│   ├── Monitors_raw/              # Raw DAM files (not tracked)
-│   ├── Monitors_date_filtered/    # Date-filtered outputs (not tracked)
-│   ├── metadata.txt                # Fly metadata
-│   └── src/
-│       ├── sql_db_pipeline/       # SQL/database pipeline
-│       │   ├── 0-filter_dates.py
-│       │   ├── 1-prepare_data_and_health.py
-│       │   ├── 2-remove_flies.py
-│       │   ├── 3-create_feature_table.py
-│       │   ├── 4-clean_ml_features.py
-│       │   ├── config.py          # Database configuration
-│       │   ├── schema.sql         # Database schema
-│       │   ├── setup_database.py  # Database initialization
-│       │   └── analysis/          # ML analysis scripts
-│       │       ├── pca_analysis.py
-│       │       ├── umap_dbscan_analysis.py
-│       │       ├── sexdiff_analysis.py
-│       │       └── random-forest.py
-│       └── csv_pipeline/          # CSV-based pipeline (no database required)
-│           ├── 0-filter_dates.py
-│           ├── 1-prepare_data_and_health.py
-│           ├── 2-remove_flies.py
-│           ├── 3-create_feature_table.py
-│           └── 4-clean_ml_features.py
-├── R/                             # R pipeline (main.r)
-├── requirements.txt               # Python dependencies
-├── sql_db_pipeline.md             # Detailed SQL pipeline documentation
-├── QUICKSTART.md                  # Step-by-step guide for both pipelines
-└── README.md                      # This file
+|
++-- Python/
+|   +-- Monitors_raw/              (raw DAM files, not tracked)
+|   +-- Monitors_date_filtered/    (Step 0 output, not tracked)
+|   +-- metadata.txt               (fly metadata)
+|   +-- QUICKSTART.md              (which pipeline to use -- start here)
+|   +-- CSV_PIPELINE.md            (full guide: CSV pipeline)
+|   +-- SQL_PIPELINE.md            (full guide: SQL pipeline)
+|   |
+|   +-- src/
+|       +-- csv_pipeline/          (CSV-based pipeline, no database required)
+|       |   +-- 0-filter_dates.py
+|       |   +-- 1-prepare_data_and_health.py
+|       |   +-- 2-remove_flies.py
+|       |   +-- 3-create_feature_table.py
+|       |   +-- 4-clean_ml_features.py
+|       |
+|       +-- sql_db_pipeline/       (SQL/database pipeline)
+|           +-- 0-filter_dates.py
+|           +-- 1-prepare_data_and_health.py
+|           +-- 2-remove_flies.py
+|           +-- 3-create_feature_table.py
+|           +-- 4-clean_ml_features.py
+|           +-- config.py          (database configuration)
+|           +-- schema.sql         (database schema)
+|           +-- setup_database.py  (database initialization)
+|           |
+|           +-- analysis/          (ML and statistical analysis scripts)
+|               +-- pca_analysis.py
+|               +-- umap_dbscan_analysis.py
+|               +-- random-forest.py
+|               +-- sexdiff_analysis.py
+|               +-- cluster_characterization.py
+|               +-- rf_vs_pca_loadings.py
+|               +-- death_prediction_xgboost.py
+|               +-- analysis_results/   (all outputs written here)
+|
++-- R/                             (R pipeline)
++-- requirements.txt               (Python dependencies)
++-- sql_db_pipeline.md             (technical reference: SQL pipeline internals)
++-- README.md                      (this file)
 ```
+
+---
 
 ## Database Schema
 
-```sql
--- Experiment metadata
-experiments (experiment_id, name, start_date, end_date, lights_on_hour, lights_off_hour)
-
--- Individual fly metadata (~960 flies)
-flies (fly_id, experiment_id, monitor, channel, genotype, sex, treatment)
-
--- Time-series data (24M+ rows)
-readings (measurement_id, experiment_id, fly_id, datetime, reading_type, value, monitor)
-
--- Health reports per fly
-health_reports (health_report_id, experiment_id, fly_id, report_date, status, metrics...)
-
--- Extracted features per fly (~960 rows × 25 features)
-features (feature_id, experiment_id, fly_id, mesor_mean, amplitude_mean, ...)
-
--- Z-scored features for ML (~960 rows × 25 features)
-features_z (feature_id, experiment_id, fly_id, mesor_mean_z, amplitude_mean_z, ...)
 ```
+experiments   -- experiment_id, name, start_date, end_date, lights_on_hour, lights_off_hour
+flies         -- fly_id, experiment_id, monitor, channel, genotype, sex, treatment
+readings      -- measurement_id, experiment_id, fly_id, datetime, reading_type (MT/CT/Pn), value
+health_reports -- health_report_id, experiment_id, fly_id, report_date, status, metrics
+features      -- feature_id, experiment_id, fly_id, mesor_mean, amplitude_mean, ... (25+ columns)
+features_z    -- same as features with _z suffix on all feature columns (z-scored for ML)
+features_sliding_window -- rolling 5-day behavioral windows per fly (used for death prediction)
+hmm_states    -- Hidden Markov Model health-state predictions per 5-min bin
+```
+
+---
 
 ## System Requirements
 
-### Minimum Requirements
-- **RAM**: 8 GB (16 GB recommended)
-- **Storage**: 10 GB free space (varies with dataset size)
-- **CPU**: Multi-core processor recommended
-
-### Memory Usage
-- **Data Processing**: ~8-12 GB RAM (sequential file processing)
-- **Feature Extraction**: ~4-6 GB RAM peak
-- **ML Analysis**: ~500 MB RAM (operates on feature table)
-
-### Performance
-- **Processing**: ~960 flies in ~30 minutes total
-- **Feature Extraction**: ~10-15 minutes
-- **Analysis**: ~1-5 minutes per method
-
-## Troubleshooting
-
-### Database Connection Issues
-
-```bash
-# Test PostgreSQL connection
-psql -h localhost -U your_username -d fly_ml_db
+```
+Minimum      Recommended
+-----------  -----------
+RAM: 8 GB    16 GB
+Storage: 10 GB free (varies with dataset size)
+CPU: multi-core recommended
 ```
 
-### Memory Errors
+**Approximate runtime for ~960 flies:**
 
-If processing fails with memory errors:
-- Process monitors sequentially (modify `DEFAULT_DAM_FILES` in scripts)
-- Increase system swap space
-- Use a machine with more RAM
+- Data loading (Step 1): 5-15 minutes
+- Feature extraction (Step 3): 10-15 minutes
+- Analysis scripts: 1-5 minutes each
+- Total: ~30 minutes
 
-### Import Errors
-
-```bash
-# Verify Python environment
-python3 --version  # Should be 3.8+
-
-# Reinstall dependencies
-pip install --upgrade -r requirements.txt
-```
+---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-- **Bedont Lab** for project development and support
-- **scikit-learn**, **UMAP**, and **pandas** communities for excellent tools
+Developed by the **Bedont Lab**.  
+Thanks to the scikit-learn, UMAP-learn, and pandas communities for their tools.
+
+---
 
 ## Support
-- **Quick Start**: See `QUICKSTART.md` for step-by-step instructions for both pipelines
-- **SQL Pipeline Docs**: See `sql_db_pipeline.md` for detailed database pipeline documentation
+
+- **Not sure where to start?** See [`Python/QUICKSTART.md`](Python/QUICKSTART.md)
+- **CSV Pipeline (no database):** See [`Python/CSV_PIPELINE.md`](Python/CSV_PIPELINE.md)
+- **SQL Pipeline (PostgreSQL):** See [`Python/SQL_PIPELINE.md`](Python/SQL_PIPELINE.md)
+- **Technical reference:** See [`sql_db_pipeline.md`](sql_db_pipeline.md) for database internals
 
 ## Roadmap
 
-- [ ] Add actogram generation from database
-- [ ] Implement additional clustering algorithms (hierarchical, k-means)
-- [ ] Add interactive visualization dashboard (Plotly/Dash)
-- [ ] Extend to non-standard photoperiods (constant dark, jet lag protocols)
-- [ ] GPU acceleration for large datasets
+- [ ] Actogram generation from database
+- [ ] Additional clustering algorithms (hierarchical, k-means)
+- [ ] Interactive visualization dashboard (Plotly/Dash)
+- [ ] Non-standard photoperiod support (constant dark, jet lag protocols)
 - [ ] Docker containerization for easier deployment
 
 ---
 
-**Developed by the Bedont Lab**  
 *Advancing behavioral neuroscience through computational methods*
