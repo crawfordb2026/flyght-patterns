@@ -1,4 +1,3 @@
 {
-    "bucket": "your-bucket-name-here",
-    "prefix": ""
+    "bucket": "your-bucket-name-here"
 }

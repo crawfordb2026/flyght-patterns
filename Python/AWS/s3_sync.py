@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-S3 sync utility for flyght-patterns.
+AWS S3 sync utility for flyght-patterns.
 
 Syncs monitor files, processed CSVs, and analysis results to/from an S3 bucket
 so collaborators can share data across machines.
 
 Setup (one-time):
   1. pip install boto3
-  2. aws configure  (or set AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY as env vars)
+  2. aws configure  (or set AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY as vars in .env)
   3. Create Python/AWS/s3_config.json:
          {"bucket": "your-bucket-name"}
-     Optionally add "prefix" to namespace runs:
-         {"bucket": "your-bucket-name", "prefix": "experiment-2025"}
 
 Usage:
-  python s3_sync.py push              # upload all pipeline files to S3
-  python s3_sync.py pull              # download all pipeline files from S3
-  python s3_sync.py status            # compare local vs S3 for all categories
+  python s3_sync.py push --prefix experiment1     # upload all pipeline files from exp1 to S3 
+  python s3_sync.py push --prefix experiment2     # upload all pipeline files from exp2 to S3
+  python s3_sync.py pull --prefix experiment1     # download all pipeline files from S3-exp1
+
+  python s3_sync.py status                        # compare local vs S3 for all categories
 
   Category flags (combine freely):
   python s3_sync.py push --raw        # only Monitors_raw/
