@@ -21,6 +21,10 @@ shap>=0.43.0  # SHAP interpretation for XGBoost (death_prediction_xgboost.py)
 matplotlib>=3.5.0
 seaborn>=0.12.0
 
+# AWS S3 sync (s3_sync.py)
+boto3>=1.26.0
+python-dotenv>=1.0.0
+
 # Database (for sql_db_pipeline only)
 sqlalchemy>=2.0.0  # Required for database ORM and connection management
 psycopg2-binary>=2.9.0  # PostgreSQL adapter (binary version for easier installation)

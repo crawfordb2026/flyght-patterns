@@ -25,7 +25,7 @@ Flyght Patterns is an integrated machine learning pipeline for extracting and an
 
 ## Getting Started
 
-**See [`Python/QUICKSTART.md`](Python/QUICKSTART.md)** — a one-page guide that helps you choose between the CSV and SQL pipelines, then points you to the right step-by-step instructions.
+**See [`Python/QUICKSTART/QUICKSTART.md`](Python/QUICKSTART/QUICKSTART.md)** — a one-page guide that helps you choose between the CSV and SQL pipelines, then points you to the right step-by-step instructions.
 
 **Prerequisites:**
 - Python 3.8 or higher
@@ -155,9 +155,10 @@ flyght-patterns/
 |   +-- Monitors_raw/              (raw DAM files, not tracked)
 |   +-- Monitors_date_filtered/    (Step 0 output, not tracked)
 |   +-- metadata.txt               (fly metadata)
-|   +-- QUICKSTART.md              (which pipeline to use -- start here)
-|   +-- CSV_PIPELINE.md            (full guide: CSV pipeline)
-|   +-- SQL_PIPELINE.md            (full guide: SQL pipeline)
+|   +-- QUICKSTART/
+|   |   +-- QUICKSTART.md          (which pipeline to use -- start here)
+|   |   +-- CSV_PIPELINE.md        (full guide: CSV pipeline)
+|   |   +-- SQL_PIPELINE.md        (full guide: SQL pipeline)
 |   |
 |   +-- src/
 |       +-- csv_pipeline/          (CSV-based pipeline, no database required)
@@ -242,9 +243,9 @@ Thanks to the scikit-learn, UMAP-learn, and pandas communities for their tools.
 
 ## Support
 
-- **Not sure where to start?** See [`Python/QUICKSTART.md`](Python/QUICKSTART.md)
-- **CSV Pipeline (no database):** See [`Python/CSV_PIPELINE.md`](Python/CSV_PIPELINE.md)
-- **SQL Pipeline (PostgreSQL):** See [`Python/SQL_PIPELINE.md`](Python/SQL_PIPELINE.md)
+- **Not sure where to start?** See [`Python/QUICKSTART/QUICKSTART.md`](Python/QUICKSTART/QUICKSTART.md)
+- **CSV Pipeline (no database):** See [`Python/QUICKSTART/CSV_PIPELINE.md`](Python/QUICKSTART/CSV_PIPELINE.md)
+- **SQL Pipeline (PostgreSQL):** See [`Python/QUICKSTART/SQL_PIPELINE.md`](Python/QUICKSTART/SQL_PIPELINE.md)
 - **Technical reference:** See [`sql_db_pipeline.md`](sql_db_pipeline.md) for database internals
 
 ## Roadmap

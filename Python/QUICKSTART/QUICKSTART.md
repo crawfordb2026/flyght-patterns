@@ -44,10 +44,10 @@ pip install -r requirements.txt
 ## Go to your pipeline guide
 
 - **CSV Pipeline** (no database needed):
-  Open `Python/CSV_PIPELINE.md`
+  Open `Python/QUICKSTART/CSV_PIPELINE.md`
 
 - **SQL Pipeline** (stores data in PostgreSQL):
-  Open `Python/SQL_PIPELINE.md`
+  Open `Python/QUICKSTART/SQL_PIPELINE.md`
 
 ---
 

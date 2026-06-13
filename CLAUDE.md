@@ -27,9 +27,9 @@ The goal is that any new conversation can read CLAUDE.md and immediately underst
 
 ## Documentation Structure
 User-facing guides live in `Python/`:
-- `Python/QUICKSTART.md` — pipeline selection guide (CSV vs SQL), short
-- `Python/CSV_PIPELINE.md` — full step-by-step guide for csv_pipeline
-- `Python/SQL_PIPELINE.md` — full step-by-step guide for sql_db_pipeline
+- `Python/QUICKSTART/QUICKSTART.md` — pipeline selection guide (CSV vs SQL), short
+- `Python/QUICKSTART/CSV_PIPELINE.md` — full step-by-step guide for csv_pipeline
+- `Python/QUICKSTART/SQL_PIPELINE.md` — full step-by-step guide for sql_db_pipeline
 
 Root-level docs:
 - `README.md` — what the project is and what it does; not a how-to guide

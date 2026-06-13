@@ -23,6 +23,9 @@ Python/metadata.txt
 Python/src/sql_db_pipeline/analysis/analysis_results/
 ML_features_clean_diagnostics*
 
+# S3 config (contains bucket name — keep out of git)
+Python/AWS/s3_config.json
+
 # Ignore Python cache files
 __pycache__/
 *.pyc
