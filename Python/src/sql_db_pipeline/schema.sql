@@ -5,14 +5,6 @@
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
 
--- Optional TimescaleDB extension (graceful fallback to regular PostgreSQL tables)
-DO $$
-BEGIN
-    CREATE EXTENSION IF NOT EXISTS timescaledb;
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE NOTICE 'TimescaleDB extension not available. Using regular PostgreSQL tables.';
-END $$;
 
 CREATE TABLE experiments (
     experiment_id SERIAL PRIMARY KEY,
@@ -52,18 +44,6 @@ CREATE TABLE readings (
     FOREIGN KEY (fly_id, experiment_id) REFERENCES flies(fly_id, experiment_id)
 );
 
-DO $$
-BEGIN
-    PERFORM create_hypertable(
-        'readings',
-        'datetime',
-        chunk_time_interval => INTERVAL '1 day',
-        if_not_exists => TRUE
-    );
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE NOTICE 'TimescaleDB not available. Using regular PostgreSQL table for readings.';
-END $$;
 
 CREATE INDEX idx_readings_fly_datetime ON readings(fly_id, datetime);
 CREATE INDEX idx_readings_experiment ON readings(experiment_id);

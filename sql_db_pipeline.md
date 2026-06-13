@@ -15,7 +15,7 @@ Visual overview of how the system works:
 │  │  ├── Monitors_date_filtered/ (optional, Step 0 output)   │   │
 │  │  │   ├── Monitor1_06_20_25.txt                          │   │
 │  │  │   └── ...                                             │   │
-│  │  └── details.txt  (small file, ~960 rows)               │   │
+│  │  └── metadata.txt  (small file, ~960 rows)               │   │
 │  └──────────────────────────────────────────────────────────┘   │
 │                            │                                    │
 │                            ▼                                    │
@@ -31,17 +31,17 @@ Visual overview of how the system works:
 │  │  │ • Parse Monitor*.txt files from Monitors_date_     │  │   │
 │  │  │   filtered/ (or Monitors_raw/)                     │  │   │
 │  │  │ • Convert to long format (MT, CT, Pn)              │  │   │
-│  │  │ • Join with metadata (details.txt)                │  │   │
+│  │  │ • Join with metadata (metadata.txt)                │  │   │
 │  │  │ • Generate health reports                          │  │   │
 │  │  └────────────────────────────────────────────────────┘  │   │
 │  │                    │                                     │   │
 │  │                    ▼                                     │   │
-│  │            [Insert to TimescaleDB]                       │   │
+│  │            [Insert to PostgreSQL]                       │   │
 │  └────────────────────┬─────────────────────────────────────┘   │
 │                       │                                         │  
 │                       ▼                                         │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │  TIMESCALEDB DATABASE                                    │   │
+│  │  POSTGRESQL DATABASE                                    │   │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │   │
 │  │  │  readings    │  │ health_reports│ │  features    │    │   │
 │  │  │  (24M rows)  │  │  (few rows)   │ │  (960 rows)  │    │   │
@@ -128,7 +128,7 @@ Visual overview of how the system works:
                │
                ▼
 ┌─────────────────────────────────────────┐
-│  TIMESCALEDB: readings table            │
+│  PostgreSQL: readings table            │
 │  ┌────────────────────────────────────┐ │
 │  │ datetime  │ fly_id │ reading │ val │ │
 │  │───────────┼────────┼─────────┼─────│ │
@@ -147,7 +147,7 @@ Visual overview of how the system works:
 
 ```
 ┌─────────────────────────────────────────┐
-│  TIMESCALEDB: readings table            │
+│  PostgreSQL: readings table            │
 │  (24M rows, all flies, all timepoints)  │
 └──────────────┬──────────────────────────┘
                │
@@ -165,7 +165,7 @@ Visual overview of how the system works:
                │
                ▼
 ┌─────────────────────────────────────────┐
-│  TIMESCALEDB: readings table (filtered) │
+│  PostgreSQL: readings table (filtered) │
 │  (fewer rows, dead/unhealthy removed)   │
 └─────────────────────────────────────────┘
 
@@ -177,7 +177,7 @@ Step 2 is optional and uses health reports to filter flies.
 
 ```
 ┌─────────────────────────────────────────┐
-│  TIMESCALEDB: readings table            │
+│  PostgreSQL: readings table            │
 │  (filtered: dead flies removed)         │
 └──────────────┬──────────────────────────┘
                │
@@ -216,7 +216,7 @@ Step 2 is optional and uses health reports to filter flies.
                │
                ▼
 ┌─────────────────────────────────────────┐
-│  TIMESCALEDB: features table            │
+│  PostgreSQL: features table            │
 │  ┌────────────────────────────────────┐ │
 │  │ fly_id │ total_sleep │ bouts │ ... │ │
 │  │────────┼─────────────┼───────┼─────│ │
@@ -234,7 +234,7 @@ Step 2 is optional and uses health reports to filter flies.
 
 ```
 ┌─────────────────────────────────────────┐
-│  TIMESCALEDB: features table            │
+│  PostgreSQL: features table            │
 │  (960 rows, 25+ columns)                │
 └──────────────┬──────────────────────────┘
                │
@@ -267,7 +267,7 @@ Step 2 is optional and uses health reports to filter flies.
                │
                ▼
 ┌─────────────────────────────────────────┐
-│  TIMESCALEDB: features_z table          │
+│  PostgreSQL: features_z table          │
 │  (z-scored, ready for ML)               │
 │  ┌────────────────────────────────────┐ │
 │  │ fly_id │ total_sleep_z │ bouts_z │...│ │
@@ -295,7 +295,7 @@ Step 2 is optional and uses health reports to filter flies.
 The database schema is defined in `schema.sql` and can be set up using `setup_database.py`.
 
 ```
-TIMESCALEDB DATABASE
+POSTGRESQL DATABASE
 │
 ├── experiments (small table)
 │   └── experiment_id, name, start_date, end_date, 
@@ -305,7 +305,7 @@ TIMESCALEDB DATABASE
 │   └── fly_id (PK), experiment_id (FK), monitor, channel,
 │       genotype, sex, treatment
 │
-├── readings (HUGE TABLE - millions of rows, TimescaleDB hypertable)
+├── readings (HUGE TABLE - millions of rows)
 │   │
 │   ├── measurement_id, experiment_id (FK), fly_id (FK),
 │   │   datetime, reading_type (MT/CT/Pn), value, monitor
@@ -352,9 +352,9 @@ Python/
 │   ├── Monitor52_06_20_25.txt
 │   └── ...
 │
-├── details.txt                  # Metadata file (fly_id, genotype, sex, treatment)
+├── metadata.txt                  # Metadata file (fly_id, genotype, sex, treatment)
 │
-└── src/db-pipeline/
+└── src/sql_db_pipeline/
     │
     ├── config.py                    # Database configuration
     │   └── DB_CONFIG, DATABASE_URL, USE_DATABASE
@@ -386,21 +386,25 @@ Python/
 
 ## Usage
 
-### 0. Install TimescaleDB
-TimescaleDB is a PostgreSQL extension used for time-series data optimization. Install it before setting up the database:
+### 0. Install PostgreSQL
 
 **macOS (Homebrew):**
 ```bash
-brew tap timescale/tap
-brew install timescaledb
-brew services restart postgresql@16  # Adjust version if needed
+brew install postgresql@16
+brew services start postgresql@16
 ```
 
-**Other platforms:** See [TimescaleDB installation guide](https://docs.timescale.com/install/latest/)
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update && sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
+```
+
+**Other platforms:** See the [PostgreSQL installation guide](https://www.postgresql.org/download/)
 
 ### 1. Setup database
 ```bash
-cd Python/src/db-pipeline
+cd Python/src/sql_db_pipeline
 python3 setup_database.py
 ```
 
@@ -422,7 +426,7 @@ python3 0-filter_dates.py --input Monitor51 --start "06/21/25" --days 5
 
 # Step 1: Load raw data and generate health reports
 # By default, loads all Monitor*.txt files from Monitors_date_filtered/
-# and metadata from details.txt
+# and metadata from metadata.txt
 python3 1-prepare_data_and_health.py
 
 # Step 2: (Optional) Remove flies
@@ -516,10 +520,10 @@ START
 │    (or Monitors_raw/ if Step 0 not run)                     │
 │  • Parse with pandas                                       │
 │  • Convert to long format (MT, CT, Pn)                     │
-│  • Join with metadata (details.txt)                        │
+│  • Join with metadata (metadata.txt)                        │
 │  • Generate health reports                                 │
 │  • Create new experiment                                   │
-│  • Insert into TimescaleDB:                                │
+│  • Insert into PostgreSQL:                                │
 │    - experiments, flies, readings, health_reports          │
 │  • By default, loads all Monitor*.txt files from         │
 │    Monitors_date_filtered/                                 │
@@ -543,7 +547,7 @@ START
 │  • Calculate sleep features (pandas)                       │
 │  • Calculate circadian features (cosinor regression)       │
 │  • Aggregate to per-fly means                             │
-│  • Insert/update into TimescaleDB.features                 │
+│  • Insert/update into PostgreSQL.features                 │
 │  • Supports --experiment-id (default: latest)              │
 │  ⏱️ Time: ~10-15 minutes                                   │
 └────────────────────┬────────────────────────────────────────┘
@@ -556,7 +560,7 @@ START
 │  • Remove IQR outliers                                      │
 │  • Fix NaN values                                           │
 │  • Z-score normalization                                    │
-│  • Insert/update into TimescaleDB.features_z               │
+│  • Insert/update into PostgreSQL.features_z               │
 │  • Supports --experiment-id (default: latest)              │
 │  • Saves diagnostics file (ML_features_clean_diagnostics)  │
 │  ⏱️ Time: ~1-2 minutes                                     │
@@ -580,9 +584,8 @@ START
 
 ## Why this design
 
-1. **TimescaleDB** stores everything and handles time-series queries efficiently
-   - Automatic partitioning by time (hypertables)
-   - Fast queries on time-ranges and fly_ids
+1. **PostgreSQL** stores everything and handles time-series queries efficiently
+   - Indexed by fly_id and datetime for fast range queries
    - Handles 24M+ rows efficiently
 
 2. **pandas** for data processing
@@ -625,13 +628,13 @@ START
 - **File locations:**
   - Raw monitor files: `Python/Monitors_raw/`
   - Date-filtered files: `Python/Monitors_date_filtered/` (Step 0 output)
-  - Metadata file: `Python/details.txt`
+  - Metadata file: `Python/metadata.txt`
 - **Step 1 automatically loads all Monitor*.txt files** from `Monitors_date_filtered/` by default
 - The pipeline uses **pandas** for all data processing
 - Files are processed **sequentially** (not in parallel)
 - Health reports are generated in **Step 1**, not Step 2
 - Step 2 is **optional** but typically used to filter flies based on health status
-- All data is stored in **TimescaleDB** (no intermediate CSV files)
+- All data is stored in **PostgreSQL** (no intermediate CSV files)
 - The `USE_DATABASE` flag allows running without database (for testing)
 - **Step 1 automatically creates a new experiment** with a timestamp-based name
 - **All steps support `--experiment-id`** to work with a specific experiment (default: latest)

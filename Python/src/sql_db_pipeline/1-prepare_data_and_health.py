@@ -3,7 +3,7 @@
 Pipeline Step 1: Prepare Data and Generate Health Report
 
 This script:
-1. Loads raw DAM files (Monitor5.txt, Monitor6.txt) and metadata (details.txt)
+1. Loads raw DAM files (Monitor5.txt, Monitor6.txt) and metadata (metadata.txt)
 2. Merges data into long format
 3. Calculates time variables: Date, Time, ZT (Zeitgeber Time), Phase (Light/Dark)
 4. Optionally filters by date range
@@ -45,13 +45,13 @@ except ImportError:
 
 def parse_details(filepath):
     """
-    Parse details.txt to extract fly metadata.
+    Parse metadata.txt to extract fly metadata.
     
     Handles space-separated or tab-separated values. Treatment (last column)
     can contain spaces (e.g., "2mM Arg", "2mM His").
     
     Args:
-        filepath (str): Path to details.txt file
+        filepath (str): Path to metadata.txt file
         
     Returns:
         pd.DataFrame: fly_metadata with columns:
@@ -230,7 +230,7 @@ def get_default_monitor_files():
     return [f'../../Monitors_date_filtered/{f.name}' for f in monitor_files] if monitor_files else []
 
 DEFAULT_DAM_FILES = get_default_monitor_files()
-DEFAULT_META_PATH = '../../details.txt'
+DEFAULT_META_PATH = '../../metadata.txt'
 # Database-only pipeline - data saved to database only
 
 # Light cycle settings
@@ -1207,7 +1207,7 @@ def prepare_data_and_health(
     
     Args:
         dam_files: List of Monitor*.txt file paths
-        meta_path: Path to details.txt metadata file
+        meta_path: Path to metadata.txt metadata file
         lights_on: Hour when lights turn on
         lights_off: Hour when lights turn off
         apply_date_filter_flag: Whether to apply date filtering
@@ -1395,7 +1395,7 @@ def prepare_data_and_health(
                     if n_after == 0:
                         raise RuntimeError(
                             "All flies were excluded from DB (no non-zero MT and non-zero Pn). "
-                            "Check monitor files and details.txt."
+                            "Check monitor files and metadata.txt."
                         )
 
                 save_to_database(dam_merged, health_report, fly_status, experiment_id, actual_exp_start)
@@ -1431,7 +1431,7 @@ def main():
     parser.add_argument('--dam-files', nargs='+', default=None,
                        help='List of Monitor*.txt files (default: Monitor5.txt, Monitor6.txt)')
     parser.add_argument('--meta-path', type=str, default=None,
-                       help='Metadata file path (default: details.txt)')
+                       help='Metadata file path (default: metadata.txt)')
     
     # Settings
     parser.add_argument('--lights-on', type=int, default=DEFAULT_LIGHTS_ON,

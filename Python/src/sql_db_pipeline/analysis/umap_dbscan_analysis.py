@@ -149,6 +149,26 @@ def subset_vehicle(df):
     return df_veh
 
 
+def load_data_from_csv(csv_path):
+    """Load z-scored features from ML_features_Z.csv (csv_pipeline output)."""
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(
+            f"CSV not found: {csv_path}\n"
+            "Run csv_pipeline steps 0-4 to generate ML_features_Z.csv."
+        )
+    df = pd.read_csv(csv_path)
+    df.columns = [col.lower() for col in df.columns]
+    for col in ['fly_id', 'genotype', 'sex', 'treatment']:
+        if col not in df.columns:
+            raise ValueError(f"CSV missing required column: '{col}'")
+    print(f"✓ Loaded {len(df)} flies from {csv_path}")
+    print(f"  Features: {len([c for c in df.columns if c.endswith('_z')])} z-scored features")
+    print(f"  Genotypes: {sorted(df['genotype'].unique())}")
+    print(f"  Sexes: {sorted(df['sex'].unique())}")
+    print(f"  Treatments: {sorted(df['treatment'].unique())}")
+    return df
+
+
 def prepare_umap_data_from_pca_csv(df_veh, pca_scores_path, experiment_id, n_pcs):
     """
     Load PC1..PCn from pca_scores.csv and align rows with df_veh (VEH flies in DB).
@@ -1192,6 +1212,12 @@ Examples:
     )
 
     parser.add_argument(
+        '--csv-input',
+        type=str,
+        default=None,
+        help='Path to ML_features_Z.csv from csv_pipeline (skips database)'
+    )
+    parser.add_argument(
         '--pca-scores-csv',
         type=str,
         default=None,
@@ -1237,7 +1263,7 @@ Examples:
     
     # Set output directory
     if args.output_dir is None:
-        # Use analysis_results/umap within db-pipeline/analysis/ folder
+        # Use analysis_results/umap within sql_db_pipeline/analysis/ folder
         script_dir = Path(__file__).parent
         args.output_dir = str(script_dir / 'analysis_results' / 'umap')
     
@@ -1248,9 +1274,13 @@ Examples:
     print("VEH-only Unsupervised Clustering and Pattern Discovery")
     print("="*60)
     
-    # Load data from database
-    df = load_data_from_db(experiment_id=args.experiment_id)
-    experiment_id_int = int(df['experiment_id'].iloc[0])
+    # Load data
+    if args.csv_input:
+        df = load_data_from_csv(args.csv_input)
+        experiment_id_int = None
+    else:
+        df = load_data_from_db(experiment_id=args.experiment_id)
+        experiment_id_int = int(df['experiment_id'].iloc[0])
 
     # Subset to vehicle
     df_veh = subset_vehicle(df)

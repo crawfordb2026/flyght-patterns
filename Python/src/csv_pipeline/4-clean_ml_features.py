@@ -92,9 +92,9 @@ def remove_problematic_flies(ML_features):
     df['never_slept'] = df['total_sleep_mean'] == 0
     df['zero_sleep_bouts'] = df['total_bouts_mean'] == 0
     df['zero_P_doze'] = (
-        (df['P_doze_mean'] == 0) |
-        df['P_doze_mean'].isna() |
-        df['P_doze_mean'].isnull()
+        (df['p_doze_mean'] == 0) |
+        df['p_doze_mean'].isna() |
+        df['p_doze_mean'].isnull()
     )
     
     # Find flies to remove
@@ -103,10 +103,10 @@ def remove_problematic_flies(ML_features):
     
     # Select relevant columns for report
     removed_flies_report = removed_flies[[
-        'fly_id', 'Genotype', 'Sex', 'Treatment',
-        'total_sleep_mean', 'total_bouts_mean', 'P_doze_mean',
+        'fly_id', 'genotype', 'sex', 'treatment',
+        'total_sleep_mean', 'total_bouts_mean', 'p_doze_mean',
         'never_slept', 'zero_sleep_bouts', 'zero_P_doze'
-    ]].sort_values(['Genotype', 'Sex', 'Treatment', 'fly_id'])
+    ]].sort_values(['genotype', 'sex', 'treatment', 'fly_id'])
     
     # Remove problematic flies
     df_clean = df[~problematic_mask].copy()
@@ -133,17 +133,17 @@ def remove_iqr_outliers(ML_features, column='total_sleep_mean', multiplier=1.5):
     
     # Compute IQR bounds per group
     iqr_results = []
-    for (genotype, sex, treatment), group in df.groupby(['Genotype', 'Sex', 'Treatment']):
+    for (genotype, sex, treatment), group in df.groupby(['genotype', 'sex', 'treatment']):
         bounds = compute_iqr_bounds(group, column, multiplier)
-        bounds['Genotype'] = genotype
-        bounds['Sex'] = sex
-        bounds['Treatment'] = treatment
+        bounds['genotype'] = genotype
+        bounds['sex'] = sex
+        bounds['treatment'] = treatment
         iqr_results.append(bounds)
     
     iqr_bounds = pd.DataFrame(iqr_results)
     
     # Merge bounds back to main dataframe
-    df = df.merge(iqr_bounds, on=['Genotype', 'Sex', 'Treatment'], how='left')
+    df = df.merge(iqr_bounds, on=['genotype', 'sex', 'treatment'], how='left')
     
     # Identify outliers
     df['is_outlier_IQR_total_sleep'] = (
@@ -152,11 +152,11 @@ def remove_iqr_outliers(ML_features, column='total_sleep_mean', multiplier=1.5):
     )
     
     # Create summary before removal
-    outlier_summary = df.groupby(['Genotype', 'Sex', 'Treatment']).agg({
+    outlier_summary = df.groupby(['genotype', 'sex', 'treatment']).agg({
         'fly_id': 'count',
         'is_outlier_IQR_total_sleep': 'sum'
     }).reset_index()
-    outlier_summary.columns = ['Genotype', 'Sex', 'Treatment', 'n_total', 'n_outliers']
+    outlier_summary.columns = ['genotype', 'sex', 'treatment', 'n_total', 'n_outliers']
     outlier_summary['percent_outliers'] = (outlier_summary['n_outliers'] / outlier_summary['n_total'] * 100).round(1)
     
     # Remove outliers
@@ -191,8 +191,8 @@ def fix_nan_values(ML_features):
     
     # Columns that should use group mean when NaN
     mean_cols = [
-        'sleep_latency_mean', 'WASO_mean',
-        'Mesor_sd', 'Amp_sd', 'Phase_sd'
+        'sleep_latency_mean', 'waso_mean',
+        'mesor_sd', 'amplitude_sd', 'phase_sd'
     ]
     
     # Replace NaN with 0 for zero_cols
@@ -205,7 +205,7 @@ def fix_nan_values(ML_features):
     for col in mean_cols:
         if col in df.columns:
             # Compute group means (returns Series aligned with df)
-            group_means = df.groupby(['Genotype', 'Sex', 'Treatment'])[col].transform('mean')
+            group_means = df.groupby(['genotype', 'sex', 'treatment'])[col].transform('mean')
             # fillna handles both pandas NA and numpy NaN
             df[col] = df[col].fillna(group_means)
     
@@ -225,7 +225,7 @@ def create_z_scored_features(ML_features):
     df = ML_features.copy()
     
     # Metadata columns to keep
-    meta_cols = ['fly_id', 'Genotype', 'Sex', 'Treatment']
+    meta_cols = ['fly_id', 'genotype', 'sex', 'treatment']
     
     # Get numeric columns (exclude metadata)
     numeric_cols = [col for col in df.columns 
@@ -277,7 +277,7 @@ def run_diagnostics(ML_features_clean):
     nan_flies = df[df.select_dtypes(include=[np.number]).apply(
         lambda row: any(np.isnan(x) if isinstance(x, (int, float)) else False for x in row), axis=1
     )]
-    diagnostics['flies_with_NaN'] = nan_flies[['fly_id', 'Genotype', 'Sex', 'Treatment']].copy() if len(nan_flies) > 0 else pd.DataFrame()
+    diagnostics['flies_with_NaN'] = nan_flies[['fly_id', 'genotype', 'sex', 'treatment']].copy() if len(nan_flies) > 0 else pd.DataFrame()
     
     # 4. Which columns have NaN
     nan_columns = []
@@ -291,12 +291,12 @@ def run_diagnostics(ML_features_clean):
     frag_nan = df[df[frag_cols].apply(
         lambda row: any(np.isnan(x) if isinstance(x, (int, float)) else False for x in row), axis=1
     )]
-    diagnostics['frag_problems'] = frag_nan[['fly_id', 'Genotype', 'Sex', 'Treatment'] + frag_cols].copy() if len(frag_nan) > 0 else pd.DataFrame()
+    diagnostics['frag_problems'] = frag_nan[['fly_id', 'genotype', 'sex', 'treatment'] + frag_cols].copy() if len(frag_nan) > 0 else pd.DataFrame()
     
     # 6. Diagnose sleep bout structure
     sleep_struct = df[
         (df['total_sleep_mean'] == 0) | (df['total_bouts_mean'] == 0)
-    ][['fly_id', 'Genotype', 'Sex', 'Treatment', 'total_sleep_mean', 'total_bouts_mean']].copy()
+    ][['fly_id', 'genotype', 'sex', 'treatment', 'total_sleep_mean', 'total_bouts_mean']].copy()
     diagnostics['sleep_structure_problems'] = sleep_struct
     
     return diagnostics

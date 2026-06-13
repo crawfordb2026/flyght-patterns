@@ -5,7 +5,6 @@
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-336791.svg)](https://www.postgresql.org/)
-[![TimescaleDB](https://img.shields.io/badge/TimescaleDB-2.0+-orange.svg)](https://www.timescale.com/)
 
 ## Overview
 
@@ -14,7 +13,7 @@ Flyght Patterns is an integrated machine learning pipeline for extracting and an
 ### Key Features
 
 - **Automated Feature Extraction**: Computes 25+ circadian rhythm and sleep architecture metrics per individual
-- **Scalable Database Architecture**: PostgreSQL with TimescaleDB for efficient time-series storage (24M+ data points)
+- **Scalable Database Architecture**: PostgreSQL for efficient time-series storage (24M+ data points)
 - **Quality Control**: Automated health classification and dead-fly detection
 - **Multivariate Analysis**: Integrated PCA, UMAP, and DBSCAN clustering workflows
 - **Dual Implementation**: Python (primary) and R pipelines for cross-validation
@@ -38,8 +37,7 @@ Flyght Patterns is an integrated machine learning pipeline for extracting and an
 ### Prerequisites
 
 - **Python**: 3.8 or higher
-- **PostgreSQL**: 13 or higher
-- **TimescaleDB**: 2.0 or higher (PostgreSQL extension)
+- **PostgreSQL**: 13 or higher (only required for sql_db_pipeline)
 - **R**: 4.0+ (optional, for R pipeline)
 
 ### Database Setup
@@ -50,10 +48,6 @@ Flyght Patterns is an integrated machine learning pipeline for extracting and an
 # Install PostgreSQL
 brew install postgresql@16
 
-# Install TimescaleDB
-brew tap timescale/tap
-brew install timescaledb
-
 # Start PostgreSQL service
 brew services start postgresql@16
 ```
@@ -61,22 +55,12 @@ brew services start postgresql@16
 #### Linux (Ubuntu/Debian)
 
 ```bash
-# Add TimescaleDB repository
-sudo sh -c "echo 'deb https://packagecloud.io/timescale/timescaledb/ubuntu/ $(lsb_release -c -s) main' > /etc/apt/sources.list.d/timescaledb.list"
-wget --quiet -O - https://packagecloud.io/timescale/timescaledb/gpgkey | sudo apt-key add -
-
-# Install
 sudo apt update
-sudo apt install timescaledb-2-postgresql-14
-
-# Configure
-sudo timescaledb-tune
-
-# Restart PostgreSQL
-sudo systemctl restart postgresql
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
 ```
 
-For other platforms, see the [TimescaleDB installation guide](https://docs.timescale.com/install/latest/).
+For other platforms, see the [PostgreSQL installation guide](https://www.postgresql.org/download/).
 
 ### Python Environment
 
@@ -96,7 +80,7 @@ pip install -r requirements.txt
 ### Database Initialization
 
 ```bash
-cd Python/src/db-pipeline
+cd Python/src/sql_db_pipeline
 
 # Create database and schema
 python3 setup_database.py
@@ -115,10 +99,10 @@ Place your DAM monitor files and metadata in the appropriate directories:
 Python/
 ├── Monitors_raw/          # Raw monitor files (Monitor51.txt, Monitor52.txt, etc.)
 ├── Monitors_date_filtered/  # Output from Step 0 (optional)
-└── details.txt            # Fly metadata (monitor, channel, genotype, sex, treatment)
+└── metadata.txt            # Fly metadata (monitor, channel, genotype, sex, treatment)
 ```
 
-**Example `details.txt` format:**
+**Example `metadata.txt` format:**
 
 ```
 Monitor  Channel  Genotype    Sex     Treatment
@@ -130,7 +114,7 @@ Monitor  Channel  Genotype    Sex     Treatment
 ### 2. Run the Pipeline
 
 ```bash
-cd Python/src/db-pipeline
+cd Python/src/sql_db_pipeline
 
 # Optional: Filter by date range first
 python3 0-filter_dates.py --input Monitor51 --load "06/20/25" --days 5 --offset 1
@@ -205,7 +189,7 @@ export DB_USER=your_username
 export DB_PASSWORD=your_password
 ```
 
-Or modify `Python/src/db-pipeline/config.py` directly.
+Or modify `Python/src/sql_db_pipeline/config.py` directly.
 
 ### Working with Multiple Experiments
 
@@ -351,9 +335,9 @@ flyght-patterns/
 ├── Python/
 │   ├── Monitors_raw/              # Raw DAM files (not tracked)
 │   ├── Monitors_date_filtered/    # Date-filtered outputs (not tracked)
-│   ├── details.txt                # Fly metadata
+│   ├── metadata.txt                # Fly metadata
 │   └── src/
-│       ├── db-pipeline/           # Main processing pipeline
+│       ├── sql_db_pipeline/       # SQL/database pipeline
 │       │   ├── 0-filter_dates.py
 │       │   ├── 1-prepare_data_and_health.py
 │       │   ├── 2-remove_flies.py
@@ -367,12 +351,16 @@ flyght-patterns/
 │       │       ├── umap_dbscan_analysis.py
 │       │       ├── sexdiff_analysis.py
 │       │       └── random-forest.py
-│       ├── main/                  # Legacy pipeline scripts
-│       ├── pipeline/              # Alternative csv based pipeline implementation
-│       └── test-scripts/          # Debugging and verification
+│       └── csv_pipeline/          # CSV-based pipeline (no database required)
+│           ├── 0-filter_dates.py
+│           ├── 1-prepare_data_and_health.py
+│           ├── 2-remove_flies.py
+│           ├── 3-create_feature_table.py
+│           └── 4-clean_ml_features.py
 ├── R/                             # R pipeline (main.r)
 ├── requirements.txt               # Python dependencies
-├── db-pipeline.md                 # Detailed pipeline documentation
+├── sql_db_pipeline.md             # Detailed SQL pipeline documentation
+├── QUICKSTART.md                  # Step-by-step guide for both pipelines
 └── README.md                      # This file
 ```
 
@@ -385,7 +373,7 @@ experiments (experiment_id, name, start_date, end_date, lights_on_hour, lights_o
 -- Individual fly metadata (~960 flies)
 flies (fly_id, experiment_id, monitor, channel, genotype, sex, treatment)
 
--- Time-series data (24M+ rows, TimescaleDB hypertable)
+-- Time-series data (24M+ rows)
 readings (measurement_id, experiment_id, fly_id, datetime, reading_type, value, monitor)
 
 -- Health reports per fly
@@ -422,9 +410,6 @@ features_z (feature_id, experiment_id, fly_id, mesor_mean_z, amplitude_mean_z, .
 ```bash
 # Test PostgreSQL connection
 psql -h localhost -U your_username -d fly_ml_db
-
-# Check TimescaleDB extension
-psql -d fly_ml_db -c "SELECT * FROM pg_extension WHERE extname = 'timescaledb';"
 ```
 
 ### Memory Errors
@@ -451,11 +436,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - **Bedont Lab** for project development and support
-- **TimescaleDB** for time-series database optimization
 - **scikit-learn**, **UMAP**, and **pandas** communities for excellent tools
 
 ## Support
-- **Documentation**: See `db-pipeline.md` for detailed pipeline documentation
+- **Quick Start**: See `QUICKSTART.md` for step-by-step instructions for both pipelines
+- **SQL Pipeline Docs**: See `sql_db_pipeline.md` for detailed database pipeline documentation
 
 ## Roadmap
 

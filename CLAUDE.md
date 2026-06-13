@@ -1,4 +1,4 @@
-# Project: flyght-patterns (db-pipeline analysis)
+# Project: flyght-patterns (pipeline analysis)
 
 ## Goals
 - Prioritize small, safe, readable changes.
@@ -9,10 +9,11 @@
 - OS: Windows (PowerShell)
 - Prefer absolute paths in commands and file references.
 - Python scripts are under:
-  - `Python/src/db-pipeline`
-  - `Python/src/db-pipeline/analysis`
+  - `Python/src/sql_db_pipeline` (SQL/database pipeline)
+  - `Python/src/csv_pipeline` (CSV-based pipeline)
+  - `Python/src/sql_db_pipeline/analysis`
 - Main outputs are under:
-  - `Python/src/db-pipeline/analysis/analysis_results/`
+  - `Python/src/sql_db_pipeline/analysis/analysis_results/`
 
 ## Code Style / Editing Rules
 - Keep code simple and explicit.

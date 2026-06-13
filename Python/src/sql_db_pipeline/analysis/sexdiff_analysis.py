@@ -101,6 +101,26 @@ def load_umap_clusters(path):
     return df
 
 
+def load_feature_data_from_csv(csv_path):
+    """Load z-scored features from ML_features_Z.csv (csv_pipeline output)."""
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(
+            f"CSV not found: {csv_path}\n"
+            "Run csv_pipeline steps 0-4 to generate ML_features_Z.csv."
+        )
+    df = pd.read_csv(csv_path)
+    df.columns = [col.lower() for col in df.columns]
+    for col in ['fly_id', 'genotype', 'sex', 'treatment']:
+        if col not in df.columns:
+            raise ValueError(f"CSV missing required column: '{col}'")
+    print(f"✓ Loaded {len(df)} flies from {csv_path}")
+    print(f"  Features: {len([c for c in df.columns if c.endswith('_z')])} z-scored features")
+    print(f"  Genotypes: {sorted(df['genotype'].unique())}")
+    print(f"  Sexes: {sorted(df['sex'].unique())}")
+    print(f"  Treatments: {sorted(df['treatment'].unique())}")
+    return df
+
+
 def load_feature_data_from_db(experiment_id=None):
     if not USE_DATABASE or not DB_AVAILABLE:
         raise RuntimeError("Database is required.")
@@ -357,6 +377,8 @@ def main():
     parser = argparse.ArgumentParser(description='Sex Difference Analysis within HDBSCAN Clusters')
     parser.add_argument('--experiment-id', type=int, default=None,
                         help='Experiment ID (default: latest)')
+    parser.add_argument('--csv-input', type=str, default=None,
+                        help='Path to ML_features_Z.csv from csv_pipeline (skips database)')
     parser.add_argument('--umap-clusters', type=str, default=None,
                         help='Path to umap_clusters.csv (default: auto-detect)')
     parser.add_argument('--output-dir', type=str, default=None,
@@ -388,7 +410,10 @@ def main():
     print("=" * 60)
 
     umap_df  = load_umap_clusters(args.umap_clusters)
-    df       = load_feature_data_from_db(experiment_id=args.experiment_id)
+    if args.csv_input:
+        df = load_feature_data_from_csv(args.csv_input)
+    else:
+        df = load_feature_data_from_db(experiment_id=args.experiment_id)
     df_veh   = subset_vehicle(df)
 
     # Merge cluster labels onto VEH feature data (keep metadata from features_z)

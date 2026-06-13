@@ -3,20 +3,21 @@
 Python/data/processed/*.csv
 
 # Ignore specific files
-Python/src/db-pipeline/analysis/generate_results_summary.py
-Python/src/db-pipeline/analysis/RESULTS_SUMMARY.md
-Python/src/db-pipeline/FEATURE_SPECIFICATION_FOR_REVIEW.md
-Python/src/db-pipeline/hmm_plots
-zOldDetails
+Python/src/sql_db_pipeline/analysis/generate_results_summary.py
+Python/src/sql_db_pipeline/analysis/RESULTS_SUMMARY.md
+Python/src/sql_db_pipeline/FEATURE_SPECIFICATION_FOR_REVIEW.md
+Python/src/sql_db_pipeline/hmm_plots
+
 HOW_TO_USE.md
 
 # Ignore monitor directories
 Python/Monitors_raw/
 Python/Monitors_date_filtered/
-Python/details.txt
+Python/metadata.txt
 
 #ignore results directory
-Python/src/db-pipeline/analysis/analysis_results/
+Python/src/sql_db_pipeline/analysis/analysis_results/
+ML_features_clean_diagnostics*
 
 # Ignore Python cache files
 __pycache__/

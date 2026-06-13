@@ -1,4 +1,4 @@
-# Python/src/db-pipeline/config.py
+# Python/src/sql_db_pipeline/config.py
 
 import os
 import sys

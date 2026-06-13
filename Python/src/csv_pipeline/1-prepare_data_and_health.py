@@ -3,7 +3,7 @@
 Pipeline Step 1: Prepare Data and Generate Health Report
 
 This script:
-1. Loads raw DAM files (Monitor5.txt, Monitor6.txt) and metadata (details.txt)
+1. Loads raw DAM files (Monitor5.txt, Monitor6.txt) and metadata (metadata.txt)
 2. Merges data into long format
 3. Calculates time variables: Date, Time, ZT (Zeitgeber Time), Phase (Light/Dark)
 4. Optionally filters by date range
@@ -32,13 +32,13 @@ from pathlib import Path
 
 def parse_details(filepath):
     """
-    Parse details.txt to extract fly metadata.
+    Parse metadata.txt to extract fly metadata.
     
     Handles space-separated or tab-separated values. Treatment (last column)
     can contain spaces (e.g., "2mM Arg", "2mM His").
     
     Args:
-        filepath (str): Path to details.txt file
+        filepath (str): Path to metadata.txt file
         
     Returns:
         pd.DataFrame: fly_metadata with columns:
@@ -204,7 +204,7 @@ def get_default_monitor_files():
     return [f'../../Monitors_date_filtered/{f.name}' for f in monitor_files] if monitor_files else []
 
 DEFAULT_DAM_FILES = get_default_monitor_files()
-DEFAULT_META_PATH = '../../details.txt'
+DEFAULT_META_PATH = '../../metadata.txt'
 DEFAULT_OUTPUT_DATA = 'data/processed/dam_data_prepared.csv'
 DEFAULT_OUTPUT_HEALTH = 'data/processed/health_report.csv'
 
@@ -631,7 +631,7 @@ def prepare_data_and_health(
     
     Args:
         dam_files: List of Monitor*.txt file paths
-        meta_path: Path to details.txt metadata file
+        meta_path: Path to metadata.txt metadata file
         lights_on: Hour when lights turn on
         lights_off: Hour when lights turn off
         apply_date_filter_flag: Whether to apply date filtering
@@ -875,7 +875,7 @@ def main():
     parser.add_argument('--dam-files', nargs='+', default=None,
                        help='List of Monitor*.txt files (default: Monitor5.txt, Monitor6.txt)')
     parser.add_argument('--meta-path', type=str, default=None,
-                       help='Metadata file path (default: details.txt)')
+                       help='Metadata file path (default: metadata.txt)')
     
     # Settings
     parser.add_argument('--lights-on', type=int, default=DEFAULT_LIGHTS_ON,

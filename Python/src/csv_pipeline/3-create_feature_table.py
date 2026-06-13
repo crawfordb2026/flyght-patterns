@@ -6,7 +6,8 @@ This script:
 1. Reads cleaned data (from Step 1 or Step 2)
 2. Extracts RHYTHM features (circadian):
    - Calculates hourly totals per fly per day per ZT
-   - Runs daily cosinor regression (per fly per day)
+   - Runs daily cosinor regression and Lomb-Scargle periodogram (per fly per day)
+   - Detects activity onset/offset and interdaily stability
    - Aggregates to per-fly means and SDs
 3. Extracts SLEEP features:
    - Calculates daily sleep metrics per fly per day
@@ -24,6 +25,7 @@ import os
 import sys
 import argparse
 from scipy import stats
+from scipy.signal import lombscargle
 from sklearn.linear_model import LinearRegression
 from pathlib import Path
 
@@ -181,31 +183,155 @@ def run_daily_cosinor(hourly_data, period=24):
     })
 
 
+def run_daily_periodogram(hourly_data):
+    """
+    Compute Lomb-Scargle periodogram to detect dominant period and rhythm strength.
+    Returns Series with periodogram_period and periodogram_power (both NaN if insufficient data).
+    """
+    df = hourly_data.copy()
+    zt_hours = df['ZT'].values
+    activity_hourly = df['hourly_MT'].values
+
+    if len(activity_hourly) < 3 or np.isnan(activity_hourly).any() or np.isnan(zt_hours).any():
+        return pd.Series({
+            'fly_id': df['fly_id'].iloc[0] if len(df) > 0 else None,
+            'Exp_Day': df['Exp_Day'].iloc[0] if len(df) > 0 else None,
+            'periodogram_period': np.nan,
+            'periodogram_power': np.nan
+        })
+
+    y = activity_hourly - np.mean(activity_hourly)
+    if np.var(y) == 0:
+        return pd.Series({
+            'fly_id': df['fly_id'].iloc[0],
+            'Exp_Day': df['Exp_Day'].iloc[0],
+            'periodogram_period': np.nan,
+            'periodogram_power': np.nan
+        })
+
+    t = zt_hours * 2 * np.pi / 24
+    periods = np.linspace(18, 30, 1000)
+    freqs = 2 * np.pi / periods
+    power = lombscargle(t, y, freqs, normalize=True)
+    max_idx = np.argmax(power)
+    return pd.Series({
+        'fly_id': df['fly_id'].iloc[0],
+        'Exp_Day': df['Exp_Day'].iloc[0],
+        'periodogram_period': periods[max_idx],
+        'periodogram_power': power[max_idx]
+    })
+
+
+def run_daily_onset_offset(hourly_data, threshold_sd=1.0, min_bins=2):
+    """
+    Detect activity onset and offset for one fly-day.
+    Onset: first sustained crossing above threshold after the daily minimum.
+    Offset: last above-threshold bin followed by a sustained below-threshold period.
+    """
+    df = hourly_data.sort_values('ZT').copy()
+    zt = df['ZT'].values
+    y = df['hourly_MT'].values.astype(float)
+
+    null = pd.Series({
+        'fly_id': df['fly_id'].iloc[0] if len(df) > 0 else None,
+        'Exp_Day': df['Exp_Day'].iloc[0] if len(df) > 0 else None,
+        'daily_activity_onset_zt': np.nan,
+        'daily_activity_offset_zt': np.nan,
+    })
+    if len(y) < 3 or np.isnan(y).any():
+        return null
+
+    smoothed = pd.Series(y).rolling(3, center=True, min_periods=1).mean().values
+    threshold = np.percentile(smoothed, 10) + threshold_sd * np.std(smoothed)
+    above = smoothed > threshold
+
+    onset_zt = np.nan
+    min_idx = int(np.argmin(smoothed))
+    for i in range(min_idx, len(above) - min_bins + 1):
+        if np.all(above[i:i + min_bins]):
+            onset_zt = zt[i]
+            break
+
+    offset_zt = np.nan
+    for i in range(len(above) - min_bins - 1, -1, -1):
+        if above[i] and np.all(~above[i + 1:i + 1 + min_bins]):
+            offset_zt = zt[i]
+            break
+
+    return pd.Series({
+        'fly_id': df['fly_id'].iloc[0],
+        'Exp_Day': df['Exp_Day'].iloc[0],
+        'daily_activity_onset_zt': onset_zt,
+        'daily_activity_offset_zt': offset_zt,
+    })
+
+
+def compute_interdaily_stability(hourly_day):
+    """
+    Compute interdaily stability (IS) per fly from the full multi-day hourly time series.
+    IS = [n * sum_h(mean_h - grand_mean)^2] / [p * sum_i(x_i - grand_mean)^2]
+    """
+    results = []
+    for fly_id, group in hourly_day.groupby('fly_id'):
+        x = group['hourly_MT'].values.astype(float)
+        if len(x) < 2 or np.isnan(x).any():
+            results.append({'fly_id': fly_id, 'interdaily_stability': np.nan})
+            continue
+        grand_mean = np.mean(x)
+        denom = np.sum((x - grand_mean) ** 2)
+        if denom == 0:
+            results.append({'fly_id': fly_id, 'interdaily_stability': np.nan})
+            continue
+        hourly_means = group.groupby('ZT')['hourly_MT'].mean()
+        p = len(hourly_means)
+        n = len(x)
+        is_val = (n * np.sum((hourly_means.values - grand_mean) ** 2)) / (p * denom)
+        results.append({'fly_id': fly_id, 'interdaily_stability': is_val})
+    return pd.DataFrame(results)
+
+
 def compute_rhythm_features(dam_clean, exclude_days, period):
     """Compute per-fly rhythm features (daily cosinor, then aggregate)."""
     print("\n[Step 3.1] Computing rhythm features...")
     
     # Prepare data
     dam_rhythm = prepare_rhythm_data(dam_clean, exclude_days)
-    
+
     # Calculate hourly totals
     hourly_day = calculate_hourly_totals(dam_rhythm)
-    
-    # Run daily cosinor for each fly-day
-    print("  Running daily cosinor regression...")
+
+    # Compute interdaily stability from full cross-day series (one value per fly)
+    is_features = compute_interdaily_stability(hourly_day)
+
+    # Run daily cosinor, periodogram, and onset/offset for each fly-day
+    print("  Running daily cosinor regression, periodogram, and onset/offset...")
     daily_cosinor_list = []
-    
+    daily_periodogram_list = []
+    daily_onset_offset_list = []
+
     for (fly_id, exp_day), group in hourly_day.groupby(['fly_id', 'Exp_Day']):
-        result = run_daily_cosinor(group, period)
-        daily_cosinor_list.append(result)
-    
+        daily_cosinor_list.append(run_daily_cosinor(group, period))
+        daily_periodogram_list.append(run_daily_periodogram(group))
+        daily_onset_offset_list.append(run_daily_onset_offset(group))
+
     daily_cosinor = pd.DataFrame(daily_cosinor_list)
-    print(f"✓ Computed daily cosinor for {len(daily_cosinor)} fly-days")
-    
+    daily_periodogram = pd.DataFrame(daily_periodogram_list)
+    daily_onset_offset = pd.DataFrame(daily_onset_offset_list)
+    print(f"✓ Computed daily features for {len(daily_cosinor)} fly-days")
+
+    # Merge all daily results
+    daily_features = daily_cosinor.merge(
+        daily_periodogram[['fly_id', 'Exp_Day', 'periodogram_period', 'periodogram_power']],
+        on=['fly_id', 'Exp_Day'], how='left'
+    ).merge(
+        daily_onset_offset[['fly_id', 'Exp_Day', 'daily_activity_onset_zt', 'daily_activity_offset_zt']],
+        on=['fly_id', 'Exp_Day'], how='left'
+    )
+
     # Get metadata
     metadata = dam_rhythm[['fly_id', 'genotype', 'sex', 'treatment']].drop_duplicates()
-    daily_features = daily_cosinor.merge(metadata, on='fly_id', how='left')
-    
+    daily_features = daily_features.merge(metadata, on='fly_id', how='left')
+
     # Aggregate to per-fly means and SDs
     print("  Aggregating to per-fly features...")
     cosinor_features = daily_features.groupby('fly_id').agg({
@@ -215,18 +341,27 @@ def compute_rhythm_features(dam_clean, exclude_days, period):
         'Mesor': ['mean', 'std'],
         'Amp': ['mean', 'std'],
         'Phase': ['mean', 'std'],
-        'Cos_p': lambda x: (x < 0.05).sum()  # rhythmic_days
+        'Cos_p': lambda x: (x < 0.05).sum(),
+        'periodogram_period': ['mean', 'std'],
+        'periodogram_power': 'mean',
+        'daily_activity_onset_zt': ['mean', 'std'],
+        'daily_activity_offset_zt': ['mean', 'std'],
     }).reset_index()
-    
-    # Flatten column names
+
+    # Flatten column names (lowercase, matching sql_db_pipeline convention)
     cosinor_features.columns = [
-        'fly_id', 'Genotype', 'Sex', 'Treatment',
-        'Mesor_mean', 'Mesor_sd', 'Amp_mean', 'Amp_sd',
-        'Phase_mean', 'Phase_sd', 'rhythmic_days'
+        'fly_id', 'genotype', 'sex', 'treatment',
+        'mesor_mean', 'mesor_sd', 'amplitude_mean', 'amplitude_sd',
+        'phase_mean', 'phase_sd', 'rhythmic_days',
+        'periodogram_period_mean', 'periodogram_period_sd', 'periodogram_power_mean',
+        'activity_onset_zt_mean', 'activity_onset_zt_sd',
+        'activity_offset_zt_mean', 'activity_offset_zt_sd',
     ]
-    
+
+    # Merge interdaily stability
+    cosinor_features = cosinor_features.merge(is_features, on='fly_id', how='left')
+
     print(f"✓ Computed rhythm features for {len(cosinor_features)} flies")
-    
     return cosinor_features
 
 
@@ -426,11 +561,8 @@ def compute_sleep_features(dam_clean, exclude_days, bin_length_min, sleep_thresh
         'Exp_Day': 'count'  # n_days
     }).reset_index()
     
-    # Rename columns to match R output
+    # Rename columns (lowercase, matching sql_db_pipeline convention)
     sleep_ML_features = sleep_ML_features.rename(columns={
-        'genotype': 'Genotype',
-        'sex': 'Sex',
-        'treatment': 'Treatment',
         'total_sleep_min': 'total_sleep_mean',
         'day_sleep_min': 'day_sleep_mean',
         'night_sleep_min': 'night_sleep_mean',
@@ -446,10 +578,10 @@ def compute_sleep_features(dam_clean, exclude_days, bin_length_min, sleep_thresh
         'fragmentation_bouts_per_hour': 'frag_bouts_per_hour_mean',
         'fragmentation_bouts_per_min_sleep': 'frag_bouts_per_min_sleep_mean',
         'mean_wake_bout_min': 'mean_wake_bout_mean',
-        'P_wake': 'P_wake_mean',
-        'P_doze': 'P_doze_mean',
+        'P_wake': 'p_wake_mean',
+        'P_doze': 'p_doze_mean',
         'sleep_latency_min': 'sleep_latency_mean',
-        'WASO_min': 'WASO_mean',
+        'WASO_min': 'waso_mean',
         'Exp_Day': 'n_days'
     })
     
@@ -537,7 +669,7 @@ def create_feature_table(
     
     ML_features = cosinor_features.merge(
         sleep_features,
-        on=['fly_id', 'Genotype', 'Sex', 'Treatment'],
+        on=['fly_id', 'genotype', 'sex', 'treatment'],
         how='inner'
     )
     
@@ -571,11 +703,11 @@ def create_feature_table(
     print("=" * 60)
     print(f"Total flies: {len(ML_features)}")
     print(f"Total features: {len(ML_features.columns)}")
-    print(f"\nRhythm features: Mesor_mean, Mesor_sd, Amp_mean, Amp_sd, Phase_mean, Phase_sd, rhythmic_days")
-    print(f"Sleep features: {len([c for c in ML_features.columns if 'sleep' in c.lower() or 'bout' in c.lower() or 'P_' in c or 'WASO' in c or 'latency' in c.lower()])} columns")
-    print(f"\nGenotypes: {sorted(ML_features['Genotype'].unique())}")
-    print(f"Sexes: {sorted(ML_features['Sex'].unique())}")
-    print(f"Treatments: {sorted(ML_features['Treatment'].unique())}")
+    print(f"\nRhythm features: mesor_mean/sd, amplitude_mean/sd, phase_mean/sd, rhythmic_days, periodogram_period_mean/sd, periodogram_power_mean, activity_onset/offset_zt_mean/sd, interdaily_stability")
+    print(f"Sleep features: {len([c for c in ML_features.columns if 'sleep' in c.lower() or 'bout' in c.lower() or 'p_wake' in c or 'p_doze' in c or 'waso' in c or 'latency' in c.lower()])} columns")
+    print(f"\nGenotypes: {sorted(ML_features['genotype'].unique())}")
+    print(f"Sexes: {sorted(ML_features['sex'].unique())}")
+    print(f"Treatments: {sorted(ML_features['treatment'].unique())}")
     
     print("\n" + "=" * 60)
     print("STEP 3 COMPLETE")

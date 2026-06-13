@@ -161,6 +161,23 @@ def load_features_from_db(experiment_id=None):
     return df
 
 
+def load_features_from_csv(csv_path):
+    """Load z-scored features from ML_features_Z.csv (csv_pipeline output)."""
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(
+            f"CSV not found: {csv_path}\n"
+            "Run csv_pipeline steps 0-4 to generate ML_features_Z.csv."
+        )
+    df = pd.read_csv(csv_path)
+    df.columns = [col.lower() for col in df.columns]
+    for col in ['fly_id', 'genotype', 'sex', 'treatment']:
+        if col not in df.columns:
+            raise ValueError(f"CSV missing required column: '{col}'")
+    print(f"✓ Loaded {len(df)} flies from {csv_path}")
+    print(f"  Features: {len([c for c in df.columns if c.endswith('_z')])} z-scored features")
+    return df
+
+
 # ---------------------------------------------------------------------------
 # Statistical analysis
 # ---------------------------------------------------------------------------
@@ -352,6 +369,10 @@ def main():
         help='Experiment ID (default: latest in DB)'
     )
     parser.add_argument(
+        '--csv-input', type=str, default=None,
+        help='Path to ML_features_Z.csv from csv_pipeline (skips database)'
+    )
+    parser.add_argument(
         '--alpha', type=float, default=0.05,
         help='Significance threshold for p_adjusted (default: 0.05)'
     )
@@ -368,9 +389,13 @@ def main():
     print('\n[1/4] Loading cluster labels...')
     clusters_df = load_cluster_labels()
 
-    # 2. Load z-scored features from DB
-    print('\n[2/4] Loading z-scored features from database...')
-    features_df = load_features_from_db(args.experiment_id)
+    # 2. Load z-scored features
+    if args.csv_input:
+        print('\n[2/4] Loading z-scored features from CSV...')
+        features_df = load_features_from_csv(args.csv_input)
+    else:
+        print('\n[2/4] Loading z-scored features from database...')
+        features_df = load_features_from_db(args.experiment_id)
 
     # 3. Merge on fly_id
     print('\n[3/4] Merging cluster labels with features...')
