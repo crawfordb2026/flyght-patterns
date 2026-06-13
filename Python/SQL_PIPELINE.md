@@ -125,15 +125,15 @@ Create a plain text file at `Python/metadata.txt`. This tells the pipeline which
 **Format** (columns separated by tabs or spaces):
 
 ```
-Monitor  Channel  Genotype   Sex     Treatment
-51       ch01     WT         Male    VEH
-51       ch02     WT         Female  VEH
-51       ch03     sleep_mut  Male    VEH
-52       ch01     WT         Male    VEH
+Monitor        Channel  Genotype   Sex     Treatment
+51_1_5_26       ch01     WT         Male    VEH
+51_1_5_26       ch02     WT         Female  VEH
+51_1_5_26       ch03     sleep_mut  Male    VEH
+52_1_5_26       ch01     WT         Male    VEH
 ```
 
 **Important notes:**
-- `Monitor` is just the monitor number (not the filename — use `51`, not `Monitor51`)
+- `Monitor` is just the monitor number (ex. 51) and the load date (1_5_26)
 - `Channel` is the channel identifier exactly as it appears in your monitor file (e.g., `ch01`, `ch02`)
 - `Treatment` should be `VEH` for vehicle/control flies (the analysis scripts look for this by default)
 - Every fly you want to analyze needs a row here
