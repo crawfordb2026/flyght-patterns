@@ -169,8 +169,6 @@ Visual overview of how the system works:
 │  (fewer rows, dead/unhealthy removed)   │
 └─────────────────────────────────────────┘
 
-Note: Health reports are generated in Step 1, not Step 2.
-Step 2 is optional and uses health reports to filter flies.
 ```
 
 ### Step 3: Feature extraction (`3-create_feature_table.py`)
